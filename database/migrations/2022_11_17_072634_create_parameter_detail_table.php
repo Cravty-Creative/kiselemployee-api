@@ -21,7 +21,7 @@ class CreateParameterDetailTable extends Migration
         $table->string('detail')->nullable();
         $table->integer('score');
         $table->timestamps();
-        $table->foreign('param_id')->references('id')->on('tipe_karyawan');
+        $table->foreign('param_id')->references('id')->on('parameter');
       });
     }
   }

@@ -21,6 +21,7 @@ class CreateNilaiKaryawanTable extends Migration
         $table->integer('bobot_param_id', false, true);
         $table->decimal('nilai', 2, 2);
         $table->decimal('nilai_x_bobot', 2, 2);
+        $table->decimal('nilai_per_kriteria', 3, 2);
         $table->string('periode')->nullable();
         $table->timestamps();
         $table->foreign('emp_id')->references('id')->on('karyawan');
