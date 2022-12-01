@@ -34,4 +34,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
   protected $hidden = [
     'password',
   ];
+
+  public function karyawan()
+  {
+    return $this->hasOne(Karyawan::class, 'user_id', 'id');
+  }
 }
