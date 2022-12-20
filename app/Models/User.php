@@ -45,7 +45,7 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
    */
   public function getJWTIdentifier()
   {
-      return $this->getKey();
+    return $this->getKey();
   }
 
   /**
@@ -55,7 +55,7 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
    */
   public function getJWTCustomClaims()
   {
-      return [];
+    return [];
   }
 
   public function karyawan()
