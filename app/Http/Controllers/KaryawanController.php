@@ -8,7 +8,7 @@ use App\Models\DateTime;
 use App\Models\Karyawan;
 use App\Models\NilaiKaryawan;
 use App\Models\Presensi;
-use App\Models\User;
+use App\Models\Users;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Crypt;
@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\Validator;
 
 class KaryawanController extends Controller
 {
+  public function __construct()
+  {
+    $this->middleware('auth:api', ['except' => ['create']]);
+  }
+
   public function create(Request $request)
   {
     try {
@@ -25,7 +30,7 @@ class KaryawanController extends Controller
         'role' => 'required|string',
         'username' => 'required|string|min:4',
         'password' => 'required|string|min:6',
-        'type_id' => 'required|number',
+        'type_id' => 'required|numeric',
         'name' => 'required|string',
         'section' => 'string',
         'work_location' => 'string',
@@ -44,7 +49,7 @@ class KaryawanController extends Controller
         throw new Exception($validator->errors()->first(), 400);
       }
       // Mencari data user apakah username sudah dipakai
-      $user = User::query()->where('username', '=', $request->username)->first();
+      $user = Users::query()->where('username', '=', $request->username)->first();
       if ($user) {
         throw new Exception("Username/NIK sudah ada", 400);
       }
@@ -58,7 +63,7 @@ class KaryawanController extends Controller
           'password' => Crypt::encrypt($request->password),
           'created_at' => DateTime::Now()
         ];
-        $iduser = User::create($newUser)->id;
+        $iduser = Users::create($newUser)->id;
         // Create data karyawan
         $newKaryawan = [
           'user_id' => $iduser,
@@ -92,10 +97,10 @@ class KaryawanController extends Controller
   {
     try {
       $validator = Validator::make($request->all(), [
-        'id' => 'required|number'
+        'id' => 'required|numeric'
       ], [
         'required' => ':attribute tidak boleh kosong',
-        'number' => ':attribute harus berupa angka'
+        'numeric' => ':attribute harus berupa angka'
       ]);
       // Kondisi validator gagal
       if ($validator->fails()) {
@@ -135,12 +140,12 @@ class KaryawanController extends Controller
   {
     try {
       $validator = Validator::make($request->all(), [
-        'first' => 'required|number',
-        'rows' => 'required|number',
-        'type_id' => 'number'
+        'first' => 'required|numeric',
+        'rows' => 'required|numeric',
+        'type_id' => 'numeric'
       ], [
         'required' => ':attribute tidak boleh kosong',
-        'number' => ':attribute harus berupa angka'
+        'numeric' => ':attribute harus berupa angka'
       ]);
       if ($validator->fails()) {
         throw new Exception($validator->errors()->first(), 400);
@@ -189,9 +194,9 @@ class KaryawanController extends Controller
   {
     try {
       $validator = Validator::make($request->all(), [
-        'user_id' => 'required|number',
-        'emp_id' => 'required|number',
-        'type_id' => 'number',
+        'user_id' => 'required|numeric',
+        'emp_id' => 'required|numeric',
+        'type_id' => 'numeric',
         'username' => 'string|min:4',
         'name' => 'string',
         'section' => 'string',
@@ -210,7 +215,7 @@ class KaryawanController extends Controller
         throw new Exception($validator->errors()->first(), 400);
       }
       // Mencari data user apakah username sudah dipakai
-      $user = User::query()->where('username', '=', $request->username)->first();
+      $user = Users::query()->where('username', '=', $request->username)->first();
       if ($user) {
         throw new Exception("Username/NIK sudah ada", 400);
       }
@@ -221,7 +226,7 @@ class KaryawanController extends Controller
       try {
         // Update data user
         if ($request->has('username') && !empty($request->username)) {
-          User::query()->where('id', '=', $request->user_id)->update([
+          Users::query()->where('id', '=', $request->user_id)->update([
             'username' => $request->username,
             'updated_at' => DateTime::Now()
           ]);
@@ -256,15 +261,15 @@ class KaryawanController extends Controller
   public function delete(Request $request)
   {
     try {
-      $validator = Validator::make($request->all(), ['user_id' => 'required|number'], [
+      $validator = Validator::make($request->all(), ['user_id' => 'required|numeric'], [
         'required' => ':attribute tidak boleh kosong',
-        'number' => ':attribute harus berupa angka'
+        'numeric' => ':attribute harus berupa angka'
       ]);
       if ($validator->fails()) {
         throw new Exception($validator->errors()->first(), 400);
       }
       // Mencari data existing user
-      $userQuery = User::query()->where('id', '=', $request->user_id);
+      $userQuery = Users::query()->where('id', '=', $request->user_id);
       $existUser = $userQuery->with('karyawan')->first();
       if (empty($existUser)) {
         throw new Exception("ID tidak sesuai", 400);

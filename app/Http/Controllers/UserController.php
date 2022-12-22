@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\DateTime;
 use App\Models\Karyawan;
-use App\Models\User;
+use App\Models\Users;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+  public function __construct()
+  {
+    $this->middleware('auth:api', ['except' => ['login']]);
+  }
   public function login(Request $request)
   {
     try {
@@ -30,17 +34,14 @@ class UserController extends Controller
         throw new Exception($validator->errors()->first(), 400);
       }
       // Mencari data user berdasarkan username pada database
-      $user = User::query()->where('username', '=', $request->username)->first();
+      $user = Users::query()->where('username', '=', $request->username)->first();
       // Kondisi Username benar
       if ($user) {
         // Kondisi Password benar
         if (Crypt::decrypt($user->password) == $request->password) {
-          $token = Auth::attempt([
-            'username' => $request->username,
-            'password' => $request->password
-          ]);
+          $token = Auth::login($user);
           if (!$token) {
-            throw new Exception("Login gagal", 500);
+            throw new Exception("Login gagal " . $token, 500);
           }
           $response = array();
           $karyawan = Karyawan::query()->where('user_id', '=', $user->id)->first();
@@ -48,6 +49,7 @@ class UserController extends Controller
             $response = [
               "token" => $token,
               "id" => $user->id,
+              "role" => $user->role,
               "username" => $user->username,
               "name" => $karyawan->name,
               "section" => $karyawan->section,
@@ -63,7 +65,7 @@ class UserController extends Controller
         }
         // Kondisi Password salah
         else {
-          throw new Exception("Password anda salah", 400);
+          throw new Exception("Password anda salah " . Crypt::decrypt($user->password), 400);
         }
       }
       // Kondisi Username salah
@@ -83,26 +85,26 @@ class UserController extends Controller
     try {
       // Validasi input
       $validator = Validator::make($request->all(), [
-        'id' => 'required|number',
+        'id' => 'required|numeric',
         'old_password' => 'required|min:6',
         'new_password' => 'required|min:6'
       ], [
         'required' => ':attribute harus di isi',
         'min' => ':attribute minimal :min karakter',
-        'number' => ':attribute harus berupa angka'
+        'numeric' => ':attribute harus berupa angka'
       ]);
       // Kondisi validator gagal
       if ($validator->fails()) {
         throw new Exception($validator->errors()->first(), 400);
       }
       // Mencari data user pada database berdasarkan user id
-      $user = User::query()->where('id', '=', $request->id)->first();
+      $user = Users::query()->where('id', '=', $request->id)->first();
       // Kondisi data user ditemukan
       if ($user) {
         // Kondisi password lama benar
         if (Crypt::decrypt($user->password) == $request->old_password) {
           // Update user password
-          $affectedRow = User::query()->where('id', '=', $user->id)->update([
+          $affectedRow = Users::query()->where('id', '=', $user->id)->update([
             'password' => Crypt::encrypt($request->password),
             'updated_at' => DateTime::Now()
           ]);
