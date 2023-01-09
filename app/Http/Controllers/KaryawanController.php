@@ -162,7 +162,7 @@ class KaryawanController extends Controller
           "user_id" => $karyawan->user->id,
           "emp_id" => $karyawan->id,
           "type_id" => $karyawan->type_id,
-          "type_name" => $karyawan->tipe_karyawan->type_name,
+          "type_name" => $karyawan->tipe_karyawan->name,
           "role" => $karyawan->user->role,
           "username" => $karyawan->user->username,
           "name" => $karyawan->name,

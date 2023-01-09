@@ -44,5 +44,15 @@ $router->group(['middleware' => 'auth:api'], function () {
   Route::put('/parameterdetail/edit', 'ParameterDetailController@update');
   Route::delete('/parameterdetail/delete', 'ParameterDetailController@delete');
   // Presensi
+  Route::post('/presensi/getall', 'PresensiController@getAll');
+  Route::post('/presensi/getbyid', 'PresensiController@getById');
+  Route::post('/presensi/create', 'PresensiController@create');
+  Route::put('/presensi/edit', 'PresensiController@update');
+  Route::delete('/presensi/delete', 'PresensiController@delete');
   // Penilaian
+  Route::post('/nilai/getall', 'PenilaianController@getAll');
+  Route::post('/nilai/getbyid', 'PenilaianController@getById');
+  Route::post('/nilai/create', 'PenilaianController@create');
+  Route::put('/nilai/edit', 'PenilaianController@update');
+  Route::delete('/nilai/delete', 'PenilaianController@delete');
 });

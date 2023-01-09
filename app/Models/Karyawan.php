@@ -30,7 +30,7 @@ class Karyawan extends Model
 
   public function user()
   {
-    return $this->belongsTo(User::class, 'user_id', 'id');
+    return $this->belongsTo(Users::class, 'user_id', 'id');
   }
 
   public function tipe_karyawan()

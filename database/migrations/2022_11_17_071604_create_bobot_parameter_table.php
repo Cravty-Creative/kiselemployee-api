@@ -20,7 +20,7 @@ class CreateBobotParameterTable extends Migration
         $table->integer('param_id', false, true);
         $table->integer('bobot');
         $table->integer('max');
-        $table->decimal('max_x_bobot', 2, 2);
+        $table->decimal('max_x_bobot', 3, 2);
         $table->timestamps();
         $table->foreign('type_id')->references('id')->on('tipe_karyawan');
         $table->foreign('param_id')->references('id')->on('parameter');

@@ -19,6 +19,11 @@ class Parameter extends Model
     'updated_at',
   ];
 
+  protected $hidden = [
+    'created_at',
+    'updated_at',
+  ];
+
   public function parameter_detail()
   {
     return $this->hasOne(ParameterDetail::class, 'param_id', 'id');

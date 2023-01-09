@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Presensi extends Model
 {
-    protected $table = 'presensi';
+  protected $table = 'presensi';
 
   /**
    * The attributes that are mass assignable.
@@ -27,6 +27,6 @@ class Presensi extends Model
 
   public function user()
   {
-    return $this->belongsTo(User::class, 'user_id', 'id');
+    return $this->belongsTo(Users::class, 'user_id', 'id');
   }
 }
