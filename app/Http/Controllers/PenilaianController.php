@@ -131,6 +131,7 @@ class PenilaianController extends Controller
         throw new Exception($validator->errors()->first(), 400);
       }
       $query = NilaiKaryawan::query();
+      $total_rows = $query->get()->count();
       if ($request->has('periode') && !empty($request->periode)) {
         $query = $query->where('periode', '=', $request->periode);
       }
@@ -149,8 +150,9 @@ class PenilaianController extends Controller
           $subquery->whereHas('karyawan', function ($subquery) use ($request) {
             $subquery->where('section', '=', $request->section);
           });
-        })->get();
-
+        });
+      $total_rows_filtered = $query->get()->count();
+      $query = $query->paginate($request->rows, ['*'], 'page-' . $request->first, $request->first);
       $data = array();
       foreach ($query as $item) {
         $row = [
@@ -173,6 +175,8 @@ class PenilaianController extends Controller
       return response()->json([
         "first" => $request->first,
         "rows" => $request->rows,
+        "total_rows" => $total_rows,
+        "total_rows_filtered" => $total_rows_filtered,
         "name" => $request->name ?? "",
         "type_id" => $request->type_id ?? "",
         "section" => $request->section ?? "",

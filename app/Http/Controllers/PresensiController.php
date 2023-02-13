@@ -117,17 +117,23 @@ class PresensiController extends Controller
       if (count($where) != 0) {
         $whereClause = " WHERE " . implode(" AND ", $where);
       }
+
       $sql = "SELECT presensi.*, users.username, karyawan.name, tipe.name 
               FROM presensi 
                 INNER JOIN users ON users.id = presensi.user_id 
                 INNER JOIN karyawan ON karyawan.user_id = users.id 
                 INNER JOIN tipe_karyawan AS tipe ON tipe.id = karyawan.type_id 
-              ORDER BY presensi.created_at ASC " . $whereClause .
-        " LIMIT " . intval(($request->first - 1) * $request->rows) . "," . $request->rows;
+              ORDER BY presensi.created_at ASC ";
+      $total_rows = count(DB::select($sql));
+      $sql .= $whereClause;
+      $total_rows_filtered = count(DB::select($sql));
+      $sql .= " LIMIT " . intval(($request->first - 1) * $request->rows) . "," . $request->rows;
       $data = DB::select($sql);
       return response()->json([
         "first" => $request->first,
         "rows" => $request->rows,
+        "total_rows" => $total_rows,
+        "total_rows_filtered" => $total_rows_filtered,
         'user_id' => $request->user_id ?? "",
         'date_start' => $request->date_start ?? "",
         'date_end' => $request->date_end ?? "",

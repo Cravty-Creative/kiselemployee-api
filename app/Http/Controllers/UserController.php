@@ -65,7 +65,7 @@ class UserController extends Controller
         }
         // Kondisi Password salah
         else {
-          throw new Exception("Password anda salah " . Crypt::decrypt($user->password), 400);
+          throw new Exception("Password anda salah", 400);
         }
       }
       // Kondisi Username salah

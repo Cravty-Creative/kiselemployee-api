@@ -93,6 +93,33 @@ class KaryawanController extends Controller
     }
   }
 
+  public function getAll()
+  {
+    try {
+      $data = Karyawan::all(['id', 'name']);
+      return response()->json($data);
+    } catch (Exception $ex) {
+      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
+      return response()->json([
+        'message' => $ex->getMessage()
+      ], $httpCode);
+    }
+  }
+
+  public function getSection()
+  {
+    try {
+      $sql = "SELECT DISTINCT section FROM karyawan";
+      $data = DB::select($sql);
+      return response()->json($data);
+    } catch (Exception $ex) {
+      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
+      return response()->json([
+        'message' => $ex->getMessage()
+      ], $httpCode);
+    }
+  }
+
   public function getById(Request $request)
   {
     try {
@@ -118,6 +145,7 @@ class KaryawanController extends Controller
         "type_name" => $karyawan->tipe_karyawan->type_name,
         "role" => $karyawan->user->role,
         "username" => $karyawan->user->username,
+        "password" => Crypt::decrypt($karyawan->user->password),
         "name" => $karyawan->name,
         "section" => $karyawan->section,
         "work_location" => $karyawan->work_location,
@@ -142,7 +170,8 @@ class KaryawanController extends Controller
       $validator = Validator::make($request->all(), [
         'first' => 'required|numeric',
         'rows' => 'required|numeric',
-        'type_id' => 'numeric'
+        'type_id' => 'numeric',
+        'name' => 'string'
       ], [
         'required' => ':attribute tidak boleh kosong',
         'numeric' => ':attribute harus berupa angka'
@@ -152,9 +181,14 @@ class KaryawanController extends Controller
       }
       // Query
       $query = Karyawan::query();
+      $total_rows = $query->get()->count();
       if ($request->has('type_id') && !empty($request->type_id)) {
         $query = $query->where('type_id', '=', $request->type_id);
       }
+      if ($request->has('name') && !empty($request->name)) {
+        $query = $query->where('name', 'LIKE', '%' . $request->name . '%');
+      }
+      $total_rows_filtered = $query->get()->count();
       $rawData = $query->with(['user', 'tipe_karyawan'])->paginate($request->rows, ['*'], 'page-' . $request->first, $request->first);
       $data = array();
       foreach ($rawData as $karyawan) {
@@ -179,6 +213,8 @@ class KaryawanController extends Controller
       return response()->json([
         'first' => $request->first,
         'rows' => count($data),
+        'total_rows' => $total_rows,
+        'total_rows_filtered' => $total_rows_filtered,
         'type_id' => $request->type_id ?? null,
         'data' => $data
       ], 200);
@@ -198,6 +234,7 @@ class KaryawanController extends Controller
         'emp_id' => 'required|numeric',
         'type_id' => 'numeric',
         'username' => 'string|min:4',
+        'password' => 'string|min:6',
         'name' => 'string',
         'section' => 'string',
         'work_location' => 'string',
@@ -225,11 +262,15 @@ class KaryawanController extends Controller
       DB::beginTransaction();
       try {
         // Update data user
-        if ($request->has('username') && !empty($request->username)) {
-          Users::query()->where('id', '=', $request->user_id)->update([
-            'username' => $request->username,
-            'updated_at' => DateTime::Now()
-          ]);
+        if (($request->has('username') && !empty($request->username)) || ($request->has('password') && !empty($request->password))) {
+          $updateUser = ['updated_at' => DateTime::Now()];
+          if (!empty($request->username)) {
+            $updateUser['username'] = $request->username;
+          }
+          if (!empty($request->password)) {
+            $updateUser['password'] = Crypt::encrypt($request->password);
+          }
+          Users::query()->where('id', '=', $request->user_id)->update($updateUser);
         }
         // Update data karyawan
         Karyawan::query()->where('id', '=', $request->emp_id)->update([
