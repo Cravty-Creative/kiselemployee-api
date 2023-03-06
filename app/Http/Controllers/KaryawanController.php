@@ -106,6 +106,42 @@ class KaryawanController extends Controller
     }
   }
 
+  public function getAllKaryawan()
+  {
+    try {
+      $data = Karyawan::query()->with(['user', 'tipe_karyawan'])->get();
+      return response()->json($data);
+    } catch (Exception $ex) {
+      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
+      return response()->json([
+        'message' => $ex->getMessage()
+      ], $httpCode);
+    }
+  }
+
+  public function getKaryawanBySection(Request $request)
+  {
+    try {
+      $validator = Validator::make($request->all(), [
+        'section' => 'required|string'
+      ], [
+        'required' => ':attribute tidak boleh kosong',
+        'string' => ':attribute harus berupa string'
+      ]);
+      // Kondisi validator gagal
+      if ($validator->fails()) {
+        throw new Exception($validator->errors()->first(), 400);
+      }
+      $data = Karyawan::query()->where('section', '=', $request->section)->with(['user', 'tipe_karyawan'])->get();
+      return response()->json($data);
+    } catch (Exception $ex) {
+      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
+      return response()->json([
+        'message' => $ex->getMessage()
+      ], $httpCode);
+    }
+  }
+
   public function getSection()
   {
     try {
@@ -182,14 +218,15 @@ class KaryawanController extends Controller
       // Query
       $query = Karyawan::query();
       $total_rows = $query->get()->count();
+      $total_rows_filtered = $total_rows;
       if ($request->has('type_id') && !empty($request->type_id)) {
         $query = $query->where('type_id', '=', $request->type_id);
       }
       if ($request->has('name') && !empty($request->name)) {
         $query = $query->where('name', 'LIKE', '%' . $request->name . '%');
       }
-      $total_rows_filtered = $query->get()->count();
-      $rawData = $query->with(['user', 'tipe_karyawan'])->paginate($request->rows, ['*'], 'page-' . $request->first, $request->first);
+      $page = $request->first / 10 + 1;
+      $rawData = $query->with(['user', 'tipe_karyawan'])->paginate($request->rows, ['*'], 'page-' . $page, $page);
       $data = array();
       foreach ($rawData as $karyawan) {
         $row = [
