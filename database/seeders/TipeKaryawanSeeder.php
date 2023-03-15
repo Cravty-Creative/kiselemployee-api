@@ -16,8 +16,8 @@ class TipeKaryawanSeeder extends Seeder
   {
     $table = DB::table('tipe_karyawan');
     if ($table->count() === 0) {
-      $table->insert(['name' => 'Operational']);
-      $table->insert(['name' => 'Non Operational']);
+      $table->insert(['name' => 'Inventory']);
+      $table->insert(['name' => 'Distribution']);
     }
   }
 }

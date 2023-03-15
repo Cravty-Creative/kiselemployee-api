@@ -10,10 +10,10 @@ class DateTime
     return date('Y-m-d H:i:s');
   }
 
-  public static function HariIni()
+  public static function HariIni($timestamp = null)
   {
     date_default_timezone_set('Asia/Jakarta');
-    $day = date('D');
+    $day = date('D', $timestamp);
     $listHari = array(
       'Sun' => 'Minggu',
       'Mon' => 'Senin',

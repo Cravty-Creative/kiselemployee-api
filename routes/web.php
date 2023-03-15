@@ -29,7 +29,7 @@ $router->group(['middleware' => 'auth:api'], function () {
   // Tipe Karyawan
   Route::get('/employee/type', 'TipeKaryawanController@getAll');
   // Karyawan & user
-  Route::get('/user/karyawan/getall', 'KaryawanController@getMany');
+  Route::get('/user/karyawan/getall', 'KaryawanController@getAll');
   Route::get('/user/karyawan/getallkaryawan', 'KaryawanController@getAllKaryawan');
   Route::get('/user/karyawan/getallkaryawanbysection', 'KaryawanController@getAllKaryawanBySection');
   Route::get('/user/karyawan/getsection', 'KaryawanController@getSection');

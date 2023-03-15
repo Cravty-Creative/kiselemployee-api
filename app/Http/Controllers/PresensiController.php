@@ -23,10 +23,17 @@ class PresensiController extends Controller
     try {
       // validasi input data
       $validator = Validator::make($request->all(), [
-        'user_id' => 'required|numeric'
+        'user_id' => 'required|numeric',
+        'tgl_absen' => 'required|date',
+        'jam_masuk' => 'required|date_format:H:i:s',
+        'jam_pulang' => 'date_format:H:i:s',
+        'is_datang' => 'required|boolean'
       ], [
         'required' => ':attribute tidak boleh kosong',
-        'numeric' => ':attribute harus berupa angka'
+        'numeric' => ':attribute harus berupa angka',
+        'date' => ':attribute harus berupa tanggal',
+        'date_format' => ':attribute harus berupa format H:i:s',
+        'boolean' => ':attribute harus berupa boolean'
       ]);
       if ($validator->fails()) {
         throw new Exception($validator->errors()->first(), 400);
@@ -36,10 +43,13 @@ class PresensiController extends Controller
       if (empty($user)) {
         throw new Exception("Data user tidak ditemukan", 404);
       }
+      if ($request->is_datang == false) {
+        return response()->json(['message' => "Anda sudah melakukan absen masuk hari ini"], 200);
+      }
       $absenData = [
         'user_id' => $request->user_id,
-        'hari' => DateTime::HariIni(),
-        'jam_masuk' => DateTime::TimeNow(),
+        'hari' => DateTime::HariIni(strtotime(str_replace('/', '-', $request->tgl_absen))),
+        'jam_masuk' => $request->jam_masuk,
         'status' => 'Sudah Absen Masuk',
         'creted_at' => DateTime::Now(),
         'updated_at' => DateTime::Now(),
@@ -47,7 +57,7 @@ class PresensiController extends Controller
         'updated_by' => $user->karyawan->name
       ];
       Presensi::create($absenData);
-      return response()->json(['message' => "Berhasil absen masuk pada jam " . DateTime::TimeNow()], 201);
+      return response()->json(['message' => "Berhasil absen masuk pada jam " . $request->jam_masuk], 201);
     } catch (Exception $ex) {
       $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
@@ -127,9 +137,13 @@ class PresensiController extends Controller
       $total_rows = count(DB::select($sql));
       $sql .= $whereClause;
       $total_rows_filtered = count(DB::select($sql));
-      $sql .= " LIMIT " . intval(($request->first - 1) * $request->rows) . "," . $request->rows;
+      $page = $request->first / 10;
+      $page = $page == 0 ? 0 : $page - 1;
+      $sql .= " LIMIT " . intval($page) . "," . $request->rows;
       $data = DB::select($sql);
       return response()->json([
+        "sql" => $sql,
+        "page" => $page,
         "first" => $request->first,
         "rows" => $request->rows,
         "total_rows" => $total_rows,
