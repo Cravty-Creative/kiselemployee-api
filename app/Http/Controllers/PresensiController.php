@@ -25,14 +25,13 @@ class PresensiController extends Controller
       $validator = Validator::make($request->all(), [
         'user_id' => 'required|numeric',
         'tgl_absen' => 'required|date',
-        'jam_masuk' => 'required|date_format:H:i:s',
-        'jam_pulang' => 'date_format:H:i:s',
+        // 'jam_absen' => 'date_format:H:i:s',
         'is_datang' => 'required|boolean'
       ], [
         'required' => ':attribute tidak boleh kosong',
         'numeric' => ':attribute harus berupa angka',
         'date' => ':attribute harus berupa tanggal',
-        'date_format' => ':attribute harus berupa format H:i:s',
+        // 'date_format' => ':attribute harus berupa format H:i:s',
         'boolean' => ':attribute harus berupa boolean'
       ]);
       if ($validator->fails()) {
@@ -43,21 +42,49 @@ class PresensiController extends Controller
       if (empty($user)) {
         throw new Exception("Data user tidak ditemukan", 404);
       }
-      if ($request->is_datang == false) {
-        return response()->json(['message' => "Anda sudah melakukan absen masuk hari ini"], 200);
+      if ($request->is_datang == true) {
+        $absen = Presensi::query()
+          ->where('user_id', '=', $request->user_id)
+          ->where('hari', '=', DateTime::HariIni(strtotime(str_replace('/', '-', $request->tgl_absen) . ' ' . $request->jam_absen)))
+          ->first();
+        if (!empty($absen)) {
+          return response()->json(['message' => "Anda sudah melakukan absen masuk hari ini"], 400);
+        } else {
+          $message = $request->jam_absen ? "Berhasil absen masuk pada jam " . $request->jam_absen : ($request->notes ? "Tidak absen masuk dengan keterangan " . $request->notes : "Tidak absen masuk tanpa keterangan"
+          );
+          $absenData = [
+            'user_id' => $request->user_id,
+            'hari' => DateTime::HariIni(strtotime(str_replace('/', '-', $request->tgl_absen) . ' ' . $request->jam_absen)),
+            'tgl_absen' => DateTime::DateSQL($request->tgl_absen),
+            'jam' => $request->jam_absen,
+            'skor' => $this->scoring_masuk($request->jam_absen, $request->notes),
+            'status' => $message,
+            'creted_at' => DateTime::Now(),
+            'updated_at' => DateTime::Now(),
+            'created_by' => $user->karyawan->name,
+            'updated_by' => $user->karyawan->name
+          ];
+          Presensi::create($absenData);
+          return response()->json(['message' => $message], 201);
+        }
+      } else {
+        $message = $request->jam_absen ? "Berhasil absen pulang pada jam " . $request->jam_absen : ($request->notes ? "Tidak absen pulang dengan keterangan " . $request->notes : "Tidak absen pulang tanpa keterangan"
+        );
+        $absenData = [
+          'user_id' => $request->user_id,
+          'hari' => DateTime::HariIni(strtotime(str_replace('/', '-', $request->tgl_absen) . ' ' . $request->jam_absen)),
+          'tgl_absen' => DateTime::DateSQL($request->tgl_absen),
+          'jam' => $request->jam_absen,
+          'skor' => $this->scoring_pulang($request->jam_absen, $request->notes),
+          'status' => $message,
+          'creted_at' => DateTime::Now(),
+          'updated_at' => DateTime::Now(),
+          'created_by' => $user->karyawan->name,
+          'updated_by' => $user->karyawan->name
+        ];
+        Presensi::create($absenData);
+        return response()->json(['message' => $message], 201);
       }
-      $absenData = [
-        'user_id' => $request->user_id,
-        'hari' => DateTime::HariIni(strtotime(str_replace('/', '-', $request->tgl_absen))),
-        'jam_masuk' => $request->jam_masuk,
-        'status' => 'Sudah Absen Masuk',
-        'creted_at' => DateTime::Now(),
-        'updated_at' => DateTime::Now(),
-        'created_by' => $user->karyawan->name,
-        'updated_by' => $user->karyawan->name
-      ];
-      Presensi::create($absenData);
-      return response()->json(['message' => "Berhasil absen masuk pada jam " . $request->jam_masuk], 201);
     } catch (Exception $ex) {
       $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
@@ -224,5 +251,51 @@ class PresensiController extends Controller
         'message' => $ex->getMessage()
       ], $httpCode);
     }
+  }
+
+  private function scoring_masuk($time = null, $notes = null)
+  {
+    $score = 0;
+    if (!empty($time)) {
+      $time = explode(":", $time);
+      $hour = intval($time[0]);
+      if ($hour < 8) {
+        $score = 5;
+      }
+      if ($hour >= 8 && $hour < 9) {
+        $score = 4;
+      }
+      if ($hour >= 9) {
+        $score = 3;
+      }
+    } else if ($time == null && !empty($notes)) {
+      $score = 2;
+    } else {
+      $score = 1;
+    }
+    return $score;
+  }
+
+  private function scoring_pulang($time = null, $notes = null)
+  {
+    $score = 0;
+    if (!empty($time)) {
+      $time = explode(":", $time);
+      $hour = intval($time[0]);
+      if ($hour < 16) {
+        $score = 3;
+      }
+      if ($hour >= 16 && $hour < 17) {
+        $score = 4;
+      }
+      if ($hour >= 17) {
+        $score = 5;
+      }
+    } else if ($time == null && !empty($notes)) {
+      $score = 2;
+    } else {
+      $score = 1;
+    }
+    return $score;
   }
 }

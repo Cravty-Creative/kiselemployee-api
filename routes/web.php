@@ -50,7 +50,7 @@ $router->group(['middleware' => 'auth:api'], function () {
   // Presensi
   Route::post('/presensi/getall', 'PresensiController@getAll');
   Route::post('/presensi/getbyid', 'PresensiController@getById');
-  Route::post('/presensi/create', 'PresensiController@create');
+  Route::post('/presensi/add', 'PresensiController@create');
   Route::put('/presensi/edit', 'PresensiController@update');
   Route::delete('/presensi/delete', 'PresensiController@delete');
   // Penilaian

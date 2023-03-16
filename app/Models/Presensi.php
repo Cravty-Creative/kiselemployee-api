@@ -16,9 +16,10 @@ class Presensi extends Model
   protected $fillable = [
     'user_id',
     'hari',
-    'jam_masuk',
-    'jam_pulang',
+    'tgl_absen',
+    'jam',
     'status',
+    'skor',
     'created_at',
     'updated_at',
     'created_by',
