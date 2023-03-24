@@ -37,4 +37,18 @@ class DateTime
     $date = explode('-', $date);
     return $date[2] . '-' . $date[1] . '-' . $date[0];
   }
+
+  public static function count_workdays_in_month($month, $year)
+  {
+    $count = 0;
+    $num = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+    for ($i = 1; $i <= $num; $i++) {
+      $date = $year . '-' . $month . '-' . $i;
+      $day = date('D', strtotime($date));
+      if ($day != 'Sun' && $day != 'Sat') {
+        $count++;
+      }
+    }
+    return $count;
+  }
 }

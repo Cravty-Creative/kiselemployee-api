@@ -8,7 +8,9 @@ use App\Models\BobotParameter;
 use App\Models\DateTime;
 use App\Models\Karyawan;
 use App\Models\NilaiKaryawan;
+use App\Models\Presensi;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class PenilaianController extends Controller
@@ -16,6 +18,136 @@ class PenilaianController extends Controller
   public function __construct()
   {
     $this->middleware('auth:api');
+  }
+
+  public function store(Request $request)
+  {
+    try {
+      $validator = Validator::make($request->all(), [
+        "user_id" => 'required|numeric',
+        "bulan" => 'required|string',
+        "tahun" => 'required|string',
+        "skor.keaktifan.olahraga" => 'required|numeric',
+        "skor.keaktifan.keagamaan" => 'required|numeric',
+        "skor.keaktifan.sharing_session" => 'required|numeric',
+        "skor.pengetahuan" => 'required|numeric',
+        "skor.action.agility" => 'required|numeric',
+        "skor.action.customer_centric" => 'required|numeric',
+        "skor.action.innovation" => 'required|numeric',
+        "skor.action.open_mindset" => 'required|numeric',
+        "skor.action.networking" => 'required|numeric',
+      ], [
+        'required' => ':attribute tidak boleh kosong',
+        'numeric' => ':attribute harus berupa angka'
+      ]);
+      if ($validator->fails()) {
+        throw new Exception($validator->errors()->first(), 400);
+      }
+      // Mengambil data karyawan
+      $karyawan = Karyawan::query()->where('user_id', '=', $request->user_id)->first();
+      if (empty($karyawan)) {
+        throw new Exception("Data karyawan tidak ditemukan", 404);
+      }
+      // Mengambil data bobot parameter
+      $bobotParameter = BobotParameter::query()
+        ->where('type_id', '=', $karyawan->type_id)->with('parameter')->get();
+      if (empty($bobotParameter)) {
+        throw new Exception("Data bobot tidak ditemukan", 404);
+      }
+      // Hitung nilai per kriteria
+      $skor = $request->skor;
+      // Menghitung data nilai presensi
+      $month = date_parse($request->bulan)['month'];
+      $year = $request->tahun;
+      $total_nilai_presensi = DB::table('presensi')
+        ->where('user_id', '=', $request->user_id)
+        ->whereYear('tgl_absen', '=', $year)
+        ->whereMonth('tgl_absen', '=', $month)
+        ->sum('skor');
+      $workdays = DateTime::count_workdays_in_month($month, $year);
+      $nilai_presensi = $total_nilai_presensi / ($workdays * 2);
+      $nilai_x_bobot_presensi = $nilai_presensi * floatval($bobotParameter[0]->bobot) / 100;
+      $nilai_max_x_bobot_presensi = floatval($bobotParameter[0]->max_x_bobot);
+      $nilai_per_kriteria_presensi = $nilai_x_bobot_presensi / $nilai_max_x_bobot_presensi * 100;
+      // Menghitung data nilai keaktifan
+      $nilai_keaktifan = ($skor['keaktifan']['olahraga'] + $skor['keaktifan']['keagamaan'] + $skor['keaktifan']['sharing_session']) / 3;
+      $nilai_x_bobot_keaktifan = $nilai_keaktifan * floatval($bobotParameter[1]->bobot) / 100;
+      $nilai_max_x_bobot_keaktifan = floatval($bobotParameter[1]->max_x_bobot);
+      $nilai_per_kriteria_keaktifan = $nilai_x_bobot_keaktifan / $nilai_max_x_bobot_keaktifan * 100;
+      // Menghitung data nilai pengetahuan
+      $nilai_pengetahuan = floatval($skor['pengetahuan']);
+      $nilai_x_bobot_pengetahuan = $nilai_pengetahuan * floatval($bobotParameter[2]->bobot) / 100;
+      $nilai_max_x_bobot_pengetahuan = floatval($bobotParameter[2]->max_x_bobot);
+      $nilai_per_kriteria_pengetahuan = $nilai_x_bobot_pengetahuan / $nilai_max_x_bobot_pengetahuan * 100;
+      // Menghitung data nilai action
+      $nilai_action = ($skor['action']['agility'] + $skor['action']['customer_centric'] + $skor['action']['innovation'] + $skor['action']['open_mindset'] + $skor['action']['networking']) / 5;
+      $nilai_x_bobot_action = $nilai_action * floatval($bobotParameter[3]->bobot) / 100;
+      $nilai_max_x_bobot_action = floatval($bobotParameter[3]->max_x_bobot);
+      $nilai_per_kriteria_action = $nilai_x_bobot_action / $nilai_max_x_bobot_action * 100;
+      // Input nilai ke database
+      DB::beginTransaction();
+      try {
+        // Input nilai presensi
+        NilaiKaryawan::create([
+          'emp_id' => $karyawan->id,
+          'param_id' => $bobotParameter[0]->param_id,
+          'bobot_param_id' => $bobotParameter[0]->id,
+          'nilai' => $nilai_presensi,
+          'nilai_x_bobot' => $nilai_x_bobot_presensi,
+          'nilai_per_kriteria' => $nilai_per_kriteria_presensi,
+          'periode' => $request->bulan . ' ' . $request->tahun,
+          'created_at' => DateTime::Now()
+        ]);
+        // Input nilai keaktifan
+        NilaiKaryawan::create([
+          'emp_id' => $karyawan->id,
+          'param_id' => $bobotParameter[1]->param_id,
+          'bobot_param_id' => $bobotParameter[1]->id,
+          'nilai' => $nilai_keaktifan,
+          'nilai_x_bobot' => $nilai_x_bobot_keaktifan,
+          'nilai_per_kriteria' => $nilai_per_kriteria_keaktifan,
+          'periode' => $request->bulan . ' ' . $request->tahun,
+          'skor' => json_encode($skor['keaktifan']),
+          'created_at' => DateTime::Now()
+        ]);
+        // Input nilai pengetahuan
+        NilaiKaryawan::create([
+          'emp_id' => $karyawan->id,
+          'param_id' => $bobotParameter[2]->param_id,
+          'bobot_param_id' => $bobotParameter[2]->id,
+          'nilai' => $nilai_pengetahuan,
+          'nilai_x_bobot' => $nilai_x_bobot_pengetahuan,
+          'nilai_per_kriteria' => $nilai_per_kriteria_pengetahuan,
+          'periode' => $request->bulan . ' ' . $request->tahun,
+          'skor' => json_encode($skor['pengetahuan']),
+          'created_at' => DateTime::Now()
+        ]);
+        // Input nilai action
+        NilaiKaryawan::create([
+          'emp_id' => $karyawan->id,
+          'param_id' => $bobotParameter[3]->param_id,
+          'bobot_param_id' => $bobotParameter[3]->id,
+          'nilai' => $nilai_action,
+          'nilai_x_bobot' => $nilai_x_bobot_action,
+          'nilai_per_kriteria' => $nilai_per_kriteria_action,
+          'periode' => $request->bulan . ' ' . $request->tahun,
+          'skor' => json_encode($skor['action']),
+          'created_at' => DateTime::Now()
+        ]);
+        DB::commit();
+        return response()->json([
+          'message' => 'Berhasil menginput nilai karyawan'
+        ], 200);
+      } catch (Exception $transEx) {
+        DB::rollBack();
+        throw new Exception($transEx->getMessage(), 500);
+      }
+    } catch (Exception $ex) {
+      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
+      return response()->json([
+        'message' => $ex->getMessage()
+      ], $httpCode);
+    }
   }
 
   public function create(Request $request)

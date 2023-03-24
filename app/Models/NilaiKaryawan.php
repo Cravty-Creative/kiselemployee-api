@@ -15,6 +15,7 @@ class NilaiKaryawan extends Model
     'nilai',
     'nilai_x_bobot',
     'nilai_per_kriteria',
+    'skor',
     'periode',
   ];
 

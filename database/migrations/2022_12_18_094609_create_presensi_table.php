@@ -18,9 +18,8 @@ class CreatePresensiTable extends Migration
         $table->integer('id', true, true);
         $table->integer('user_id', false, true);
         $table->string('hari', 5);
-        $table->time('jam_masuk');
-        $table->time('jam_pulang')->nullable();
-        $table->string('status', 45);
+        $table->time('jam');
+        $table->text('status');
         $table->decimal('skor', 3, 2)->default(0.00);
         $table->timestamps();
         $table->string('created_by', 150);

@@ -54,6 +54,7 @@ $router->group(['middleware' => 'auth:api'], function () {
   Route::put('/presensi/edit', 'PresensiController@update');
   Route::delete('/presensi/delete', 'PresensiController@delete');
   // Penilaian
+  Route::post('/penilaian', 'PenilaianController@store');
   Route::post('/nilai/getall', 'PenilaianController@getAll');
   Route::post('/nilai/getbyid', 'PenilaianController@getById');
   Route::post('/nilai/create', 'PenilaianController@create');

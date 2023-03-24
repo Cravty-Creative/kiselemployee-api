@@ -45,7 +45,7 @@ class PresensiController extends Controller
       if ($request->is_datang == true) {
         $absen = Presensi::query()
           ->where('user_id', '=', $request->user_id)
-          ->where('hari', '=', DateTime::HariIni(strtotime(str_replace('/', '-', $request->tgl_absen) . ' ' . $request->jam_absen)))
+          ->where('tgl_absen', '=', DateTime::DateSQL($request->tgl_absen))
           ->first();
         if (!empty($absen)) {
           return response()->json(['message' => "Anda sudah melakukan absen masuk hari ini"], 400);

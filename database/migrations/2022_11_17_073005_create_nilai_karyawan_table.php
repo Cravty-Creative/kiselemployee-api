@@ -22,6 +22,7 @@ class CreateNilaiKaryawanTable extends Migration
         $table->decimal('nilai', 3, 2);
         $table->decimal('nilai_x_bobot', 3, 2);
         $table->decimal('nilai_per_kriteria', 5, 2);
+        $table->json('skor')->nullable();
         $table->string('periode')->nullable();
         $table->timestamps();
         $table->foreign('emp_id')->references('id')->on('karyawan');
