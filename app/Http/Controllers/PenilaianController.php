@@ -150,100 +150,6 @@ class PenilaianController extends Controller
     }
   }
 
-  // public function create(Request $request)
-  // {
-  //   try {
-  //     // Validasi input
-  //     $validator = Validator::make($request->all(), [
-  //       "emp_id" => 'required|numeric',
-  //       "param_id" => 'required|numeric',
-  //       "nilai" => 'required|numeric',
-  //       "periode" => 'required|string'
-  //     ], [
-  //       'required' => ':attribute tidak boleh kosong',
-  //       'numeric' => ':attribute harus berupa angka'
-  //     ]);
-  //     if ($validator->fails()) {
-  //       throw new Exception($validator->errors()->first(), 400);
-  //     }
-  //     // Mengambil data karyawan
-  //     $karyawan = Karyawan::query()->where('id', '=', $request->emp_id)->first();
-  //     if (empty($karyawan)) {
-  //       throw new Exception("Data karyawan tidak ditemukan", 404);
-  //     }
-  //     // Mengambil data bobot parameter
-  //     $bobotParameter = BobotParameter::query()
-  //       ->where('type_id', '=', $karyawan->type_id, 'and')
-  //       ->where('param_id', '=', $request->param_id)->first();
-  //     if (empty($bobotParameter)) {
-  //       throw new Exception("Data bobot tidak ditemukan", 404);
-  //     }
-  //     // Rumus hitung nilai
-  //     $nilai_x_bobot = intval($request->nilai) * intval($bobotParameter->bobot) / 100;
-  //     $nilai_per_kriteria = $nilai_x_bobot / $bobotParameter->max_x_bobot * 100;
-  //     // Input data ke table nilai karyawan
-  //     NilaiKaryawan::create([
-  //       'emp_id' => $karyawan->id,
-  //       'param_id' => $request->param_id,
-  //       'bobot_param_id' => $bobotParameter->id,
-  //       'nilai' => $request->nilai,
-  //       'nilai_x_bobot' => $nilai_x_bobot,
-  //       'nilai_per_kriteria' => $nilai_per_kriteria,
-  //       'periode' => $request->periode,
-  //       'created_at' => DateTime::Now()
-  //     ]);
-
-  //     return response()->json(['message' => "Data berhasil dibuat"], 201);
-  //   } catch (Exception $ex) {
-  //     $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
-  //     return response()->json([
-  //       'message' => $ex->getMessage()
-  //     ], $httpCode);
-  //   }
-  // }
-
-  // public function getById(Request $request)
-  // {
-  //   try {
-  //     // Validasi data id
-  //     $validator = Validator::make($request->all(), [
-  //       'id' => 'required|numeric'
-  //     ], [
-  //       'required' => ':attribute tidak boleh kosong',
-  //       'numeric' => ':attribute harus berupa angka'
-  //     ]);
-  //     // Kondisi validator gagal
-  //     if ($validator->fails()) {
-  //       throw new Exception($validator->errors()->first(), 400);
-  //     }
-  //     $nilaiKaryawan = NilaiKaryawan::query()->where('id', '=', $request->id)->with(['karyawan', 'parameter', 'bobot_parameter'])->first();
-  //     if (empty($nilaiKaryawan)) {
-  //       throw new Exception("Data nilai tidak ditemukan", 404);
-  //     }
-  //     $data = [
-  //       "id" => $nilaiKaryawan->id,
-  //       "emp_id" => $nilaiKaryawan->karyawan->id,
-  //       "emp_name" => $nilaiKaryawan->karyawan->name,
-  //       "param_id" => $nilaiKaryawan->parameter->id,
-  //       "param_name" => $nilaiKaryawan->parameter->name,
-  //       "bobot_param_id" => $nilaiKaryawan->bobot_parameter->id,
-  //       "bobot" => $nilaiKaryawan->bobot_parameter->bobot,
-  //       "max" => $nilaiKaryawan->bobot_parameter->max,
-  //       "max_x_bobot" => $nilaiKaryawan->bobot_parameter->max_x_bobot,
-  //       "nilai" => $nilaiKaryawan->nilai,
-  //       "nilai_x_bobot" => $nilaiKaryawan->nilai_x_bobot,
-  //       "nilai_per_kriteria" => $nilaiKaryawan->nilai_per_kriteria,
-  //       "periode" => $nilaiKaryawan->periode
-  //     ];
-  //     return response()->json($data, 200);
-  //   } catch (Exception $ex) {
-  //     $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
-  //     return response()->json([
-  //       'message' => $ex->getMessage()
-  //     ], $httpCode);
-  //   }
-  // }
-
   public function getAll(Request $request)
   {
     try {
@@ -287,6 +193,7 @@ class PenilaianController extends Controller
           $row = [
             "no" => $no++,
             "user_id" => $item->user_id,
+            "nilai_absensi_id" => $absensi->id,
             "nilai_keaktifan_id" => $keaktifan->id,
             "nilai_pengetahuan_id" => $pengetahuan->id,
             "nilai_action_id" => $action->id,
@@ -330,10 +237,20 @@ class PenilaianController extends Controller
   {
     try {
       $validator = Validator::make($request->all(), [
-        "id" => 'required|numeric',
-        "param_id" => 'required|numeric',
-        "nilai" => 'required|numeric',
-        "periode" => 'required|string'
+        "user_id" => 'required|numeric',
+        "bulan" => 'string',
+        "skor.keaktifan.id" => 'required|numeric',
+        "skor.keaktifan.olahraga" => 'required|numeric',
+        "skor.keaktifan.keagamaan" => 'required|numeric',
+        "skor.keaktifan.sharing_session" => 'required|numeric',
+        "skor.pengetahuan.id" => 'required|numeric',
+        "skor.pengetahuan.pengetahuan" => 'required|numeric',
+        "skor.action.id" => 'required|numeric',
+        "skor.action.agility" => 'required|numeric',
+        "skor.action.customer_centric" => 'required|numeric',
+        "skor.action.innovation" => 'required|numeric',
+        "skor.action.open_mindset" => 'required|numeric',
+        "skor.action.networking" => 'required|numeric',
       ], [
         'required' => ':attribute tidak boleh kosong',
         'numeric' => ':attribute harus berupa angka',
@@ -342,37 +259,83 @@ class PenilaianController extends Controller
       if ($validator->fails()) {
         throw new Exception($validator->errors()->first(), 400);
       }
-      $query = NilaiKaryawan::query()->where('id', '=', $request->id);
-      // Mengambil data nilai existing
-      $penilaian = $query->first();
-      if (empty($penilaian)) {
-        throw new Exception("Data nilai tidak ditemukan", 404);
+      $skor = $request->skor;
+      // Cek data dan hitung nilai keaktifan
+      $keaktifan = NilaiKaryawan::query()->where('id', '=', $request->skor['keaktifan']['id'])->with('bobot_parameter')->first();
+      if (empty($keaktifan)) {
+        throw new Exception("Data keaktifan tidak ditemukan", 404);
       }
-      // Mengambil data karyawan
-      $karyawan = Karyawan::query()->where('id', '=', $penilaian->emp_id)->first();
-      if (empty($karyawan)) {
-        throw new Exception("Data karyawan tidak ditemukan", 404);
+      $nilai_keaktifan = ($skor['keaktifan']['olahraga'] + $skor['keaktifan']['keagamaan'] + $skor['keaktifan']['sharing_session']) / 3;
+      $nilai_x_bobot_keaktifan = $nilai_keaktifan * floatval($keaktifan->bobot_parameter->bobot) / 100;
+      $nilai_max_x_bobot_keaktifan = floatval($keaktifan->bobot_parameter->max_x_bobot);
+      $nilai_per_kriteria_keaktifan = $nilai_x_bobot_keaktifan / $nilai_max_x_bobot_keaktifan * 100;
+
+      // Cek data dan hitung nilai pengetahuan
+      $pengetahuan = NilaiKaryawan::query()->where('id', '=', $request->skor['pengetahuan']['id'])->with('bobot_parameter')->first();
+      if (empty($pengetahuan)) {
+        throw new Exception("Data pengetahuan tidak ditemukan", 404);
       }
-      // Mengambil data bobot parameter
-      $bobotParameter = BobotParameter::query()
-        ->where('type_id', '=', $karyawan->type_id, 'and')
-        ->where('param_id', '=', $request->param_id)->first();
-      if (empty($bobotParameter)) {
-        throw new Exception("Data bobot tidak ditemukan", 404);
+      $nilai_pengetahuan = floatval($skor['pengetahuan']['pengetahuan']);
+      $nilai_x_bobot_pengetahuan = $nilai_pengetahuan * floatval($pengetahuan->bobot_parameter->bobot) / 100;
+      $nilai_max_x_bobot_pengetahuan = floatval($pengetahuan->bobot_parameter->max_x_bobot);
+      $nilai_per_kriteria_pengetahuan = $nilai_x_bobot_pengetahuan / $nilai_max_x_bobot_pengetahuan * 100;
+
+      // Cek data dan hitung nilai action
+      $action = NilaiKaryawan::query()->where('id', '=', $request->skor['action']['id'])->with('bobot_parameter')->first();
+      if (empty($action)) {
+        throw new Exception("Data action tidak ditemukan", 404);
       }
-      // Rumus hitung nilai
-      $nilai_x_bobot = intval($request->nilai) * intval($bobotParameter->bobot) / 100;
-      $nilai_per_kriteria = $nilai_x_bobot / $bobotParameter->max_x_bobot * 100;
-      // Update data nilai
-      $updateData = $request->except('id');
-      $updateData['nilai_x_bobot'] = $nilai_x_bobot;
-      $updateData['nilai_per_kriteria'] = $nilai_per_kriteria;
-      $updateData['updated_at'] = DateTime::Now();
-      $affectedRow = $query->update($updateData);
-      if ($affectedRow == 0) {
-        throw new Exception("Gagal update data di database", 500);
+      $nilai_action = ($skor['action']['agility'] + $skor['action']['customer_centric'] + $skor['action']['innovation'] + $skor['action']['open_mindset'] + $skor['action']['networking']) / 5;
+      $nilai_x_bobot_action = $nilai_action * floatval($action->bobot_parameter->bobot) / 100;
+      $nilai_max_x_bobot_action = floatval($action->bobot_parameter->max_x_bobot);
+      $nilai_per_kriteria_action = $nilai_x_bobot_action / $nilai_max_x_bobot_action * 100;
+
+      // Update nilai pada database
+      $affectedRows = 0;
+      DB::beginTransaction();
+      try {
+        // Update nilai keaktifan
+        $affectedRows += NilaiKaryawan::query()->where('id', '=', $keaktifan->id)->update([
+          'nilai' => $nilai_keaktifan,
+          'nilai_x_bobot' => $nilai_x_bobot_keaktifan,
+          'nilai_per_kriteria' => $nilai_per_kriteria_keaktifan,
+          'skor' => json_encode([
+            'olahraga' => $skor['keaktifan']['olahraga'],
+            'keagamaan' => $skor['keaktifan']['keagamaan'],
+            'sharing_session' => $skor['keaktifan']['sharing_session']
+          ])
+        ]);
+        // Update nilai pengetahuan
+        $affectedRows += NilaiKaryawan::query()->where('id', '=', $pengetahuan->id)->update([
+          'nilai' => $nilai_pengetahuan,
+          'nilai_x_bobot' => $nilai_x_bobot_pengetahuan,
+          'nilai_per_kriteria' => $nilai_per_kriteria_pengetahuan,
+          'skor' => json_encode([
+            'pengetahuan' => $skor['pengetahuan']['pengetahuan']
+          ])
+        ]);
+        // Update nilai action
+        $affectedRows += NilaiKaryawan::query()->where('id', '=', $action->id)->update([
+          'nilai' => $nilai_action,
+          'nilai_x_bobot' => $nilai_x_bobot_action,
+          'nilai_per_kriteria' => $nilai_per_kriteria_action,
+          'skor' => json_encode([
+            'agility' => $skor['action']['agility'],
+            'customer_centric' => $skor['action']['customer_centric'],
+            'innovation' => $skor['action']['innovation'],
+            'open_mindset' => $skor['action']['open_mindset'],
+            'networking' => $skor['action']['networking']
+          ])
+        ]);
+        if ($affectedRows < 3) {
+          throw new Exception("Data tidak berhasil diubah", 500);
+        }
+        DB::commit();
+        return response()->json(['message' => "Data berhasil diubah"], 202);
+      } catch (Exception $transEx) {
+        DB::rollBack();
+        throw new Exception($transEx->getMessage(), 500);
       }
-      return response()->json(['message' => "Data berhasil diubah"], 202);
     } catch (Exception $ex) {
       $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
