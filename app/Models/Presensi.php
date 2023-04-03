@@ -20,6 +20,7 @@ class Presensi extends Model
     'jam',
     'status',
     'skor',
+    'tipe_absen',
     'created_at',
     'updated_at',
     'created_by',

@@ -48,7 +48,7 @@ class PenilaianController extends Controller
       if (empty($karyawan)) {
         throw new Exception("Data karyawan tidak ditemukan", 404);
       }
-      // Mengambil data bobot parameter
+      // Mengambil data bobot parameter sesuai dengan type karyawan (Inventory atau Distribution)
       $bobotParameter = BobotParameter::query()
         ->where('type_id', '=', $karyawan->type_id)->with('parameter')->get();
       if (empty($bobotParameter)) {
