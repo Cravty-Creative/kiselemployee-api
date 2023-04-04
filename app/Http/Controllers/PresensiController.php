@@ -17,16 +17,7 @@ class PresensiController extends Controller
   {
     $this->middleware('auth:api');
   }
-
-//   revisi menu absen : 
-// - Create (Major)
-// - GetPresensiAll (Minor) (request tambah section, response menyesuaikan 200 OK)
-// - Edit (Major)
-// - Delete (Major)
-
-// api gak dipake :
-// - GetPresensiById
-
+  
   public function create(Request $request)
   {
     try {

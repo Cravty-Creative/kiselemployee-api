@@ -178,8 +178,14 @@ class PenilaianController extends Controller
       if ($request->has('section') && !empty($request->section)) {
         $query = $query->where('section', 'LIKE', '%'. $request->section . '%');
       }
+      $total_rows = 0;
+      $rows = $query->get();
+      foreach ($rows as $row) {
+        if (count($row->nilai_karyawan) > 0) {
+          $total_rows++;
+        }
+      }
       $query = $query->paginate($request->rows, ['*'], 'page-' . $page, $page);
-      $total_rows = $query->total();
       $data = array();
       foreach ($query as $item) {
         if (count($item->nilai_karyawan) > 0) {
