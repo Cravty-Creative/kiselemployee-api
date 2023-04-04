@@ -58,4 +58,6 @@ $router->group(['middleware' => 'auth:api'], function () {
   Route::post('/nilai/create', 'PenilaianController@store');
   Route::put('/nilai/edit', 'PenilaianController@update');
   Route::delete('/nilai/delete', 'PenilaianController@delete');
+  // Rating
+  Route::post('/rating', 'RatingController@getRating');
 });

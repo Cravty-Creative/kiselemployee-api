@@ -26,7 +26,7 @@ class Parameter extends Model
 
   public function parameter_detail()
   {
-    return $this->hasOne(ParameterDetail::class, 'param_id', 'id');
+    return $this->hasMany(ParameterDetail::class, 'param_id', 'id');
   }
 
   public function bobot_parameter()

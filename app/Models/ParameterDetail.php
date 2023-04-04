@@ -29,6 +29,6 @@ class ParameterDetail extends Model
 
   public function parameter()
   {
-    return $this->hasOne(Parameter::class, 'param_id', 'id');
+    return $this->belongsTo(Parameter::class, 'param_id', 'id');
   }
 }

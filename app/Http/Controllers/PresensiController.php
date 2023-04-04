@@ -17,7 +17,7 @@ class PresensiController extends Controller
   {
     $this->middleware('auth:api');
   }
-  
+
   public function create(Request $request)
   {
     try {
@@ -54,10 +54,10 @@ class PresensiController extends Controller
           'skor' => $request->skor_masuk,
           'status' => $request->status_masuk,
           'tipe_absen' => 'Masuk',
-          'creted_at' => DateTime::Now(),
+          'created_at' => DateTime::Now(),
           'updated_at' => DateTime::Now(),
-          'created_by' => $user->karyawan->name,
-          'updated_by' => $user->karyawan->name
+          'created_by' => "admin",
+          'updated_by' => "admin"
         ]);
         // Input data absen pulang
         Presensi::create([
@@ -68,10 +68,10 @@ class PresensiController extends Controller
           'skor' => $request->skor_pulang,
           'status' => $request->status_pulang,
           'tipe_absen' => 'Pulang',
-          'creted_at' => DateTime::Now(),
+          'created_at' => DateTime::Now(),
           'updated_at' => DateTime::Now(),
-          'created_by' => $user->karyawan->name,
-          'updated_by' => $user->karyawan->name
+          'created_by' => "admin",
+          'updated_by' => "admin"
         ]);
         DB::commit();
         return response()->json(['message' => "Berhasil absen masuk dan pulang"], 201);

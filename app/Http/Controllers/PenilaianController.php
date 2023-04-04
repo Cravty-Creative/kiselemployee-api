@@ -27,6 +27,8 @@ class PenilaianController extends Controller
         "user_id" => 'required|numeric',
         "bulan" => 'required|string',
         "tahun" => 'required',
+        "skor.absensi.masuk" => 'numeric',
+        "skor.absensi.pulang" => 'numeric',
         "skor.keaktifan.olahraga" => 'required|numeric',
         "skor.keaktifan.keagamaan" => 'required|numeric',
         "skor.keaktifan.sharing_session" => 'required|numeric',
@@ -59,13 +61,30 @@ class PenilaianController extends Controller
       // Menghitung data nilai presensi
       $month = date_parse($request->bulan)['month'];
       $year = $request->tahun;
-      $total_nilai_presensi = DB::table('presensi')
-        ->where('user_id', '=', $request->user_id)
-        ->whereYear('tgl_absen', '=', $year)
-        ->whereMonth('tgl_absen', '=', $month)
-        ->sum('skor');
-      $workdays = DateTime::count_workdays_in_month($month, $year);
-      $nilai_presensi = $total_nilai_presensi / ($workdays * 2);
+      $avg_nilai_masuk = 0;
+      $avg_nilai_pulang = 0;
+      if (!empty($skor['absensi']['masuk']) && !empty($skor['absensi']['pulang'])) {
+        $avg_nilai_masuk = $skor['absensi']['masuk'];
+        $avg_nilai_pulang = $skor['absensi']['pulang'];
+      }
+      else {
+        $sum_nilai_masuk = Presensi::query()
+          ->where('user_id', '=', $request->user_id)
+          ->whereYear('tgl_absen', '=', $year)
+          ->whereMonth('tgl_absen', '=', $month)
+          ->where('tipe_absen', '=', 'Masuk')
+          ->sum('skor');
+        $sum_nilai_pulang = Presensi::query()
+          ->where('user_id', '=', $request->user_id)
+          ->whereYear('tgl_absen', '=', $year)
+          ->whereMonth('tgl_absen', '=', $month)
+          ->where('tipe_absen', '=', 'Pulang')
+          ->sum('skor');
+        $workdays = DateTime::count_workdays_in_month($month, $year);
+        $avg_nilai_masuk = $sum_nilai_masuk / $workdays;
+        $avg_nilai_pulang = $sum_nilai_pulang / $workdays;  
+      }
+      $nilai_presensi = ($avg_nilai_masuk + $avg_nilai_pulang) / 2;
       $nilai_x_bobot_presensi = $nilai_presensi * floatval($bobotParameter[0]->bobot) / 100;
       $nilai_max_x_bobot_presensi = floatval($bobotParameter[0]->max_x_bobot);
       $nilai_per_kriteria_presensi = $nilai_x_bobot_presensi / $nilai_max_x_bobot_presensi * 100;
@@ -96,6 +115,10 @@ class PenilaianController extends Controller
           'nilai_x_bobot' => $nilai_x_bobot_presensi,
           'nilai_per_kriteria' => $nilai_per_kriteria_presensi,
           'periode' => $request->bulan . ' ' . $request->tahun,
+          'skor' => json_encode([
+            'masuk' => $avg_nilai_masuk,
+            'pulang' => $avg_nilai_pulang
+          ]),
           'created_at' => DateTime::Now()
         ]);
         // Input nilai keaktifan
