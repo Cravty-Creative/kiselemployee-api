@@ -81,8 +81,8 @@ class PenilaianController extends Controller
           ->where('tipe_absen', '=', 'Pulang')
           ->sum('skor');
         $workdays = DateTime::count_workdays_in_month($month, $year);
-        $avg_nilai_masuk = $sum_nilai_masuk / $workdays;
-        $avg_nilai_pulang = $sum_nilai_pulang / $workdays;  
+        $avg_nilai_masuk = intval($sum_nilai_masuk / $workdays);
+        $avg_nilai_pulang = intval($sum_nilai_pulang / $workdays);  
       }
       $nilai_presensi = ($avg_nilai_masuk + $avg_nilai_pulang) / 2;
       $nilai_x_bobot_presensi = $nilai_presensi * floatval($bobotParameter[0]->bobot) / 100;
