@@ -15,6 +15,7 @@ class Parameter extends Model
    */
   protected $fillable = [
     'name',
+    'rumus',
     'created_at',
     'updated_at',
   ];

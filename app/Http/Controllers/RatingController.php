@@ -40,8 +40,7 @@ class RatingController extends Controller
         "periode" => "required|string",
         "tipe_karyawan" => "string",
         // "user_id" => "numeric",
-        "first" => "numeric",
-        "rows" => "numeric"
+        "limit" => "numeric"
       ], [
         "required" => ":attribute tidak boleh kosong",
         "string" => ":attribute harus berupa string",
@@ -84,8 +83,8 @@ class RatingController extends Controller
       if (!empty($request->user_id)) {
         $rows_poin = $rows_poin->where('user_id', '=', $request->user_id);
       }
-      if (!empty($request->first) || !empty($request->rows)) {
-        $rows_poin = $rows_poin->skip($request->first ?? 0)->take($request->rows ?? 0);
+      if (!empty($request->limit) && $request->limit > 0) {
+        $rows_poin = $rows_poin->skip(0)->take($request->limit);
       }
       $rows_poin = $rows_poin->get();
       $poin = [];
@@ -129,44 +128,100 @@ class RatingController extends Controller
       $bobot_keaktifan_mengikuti_kegiatan = floatval(intval(str_replace('%', '', $bobot['keaktifan_mengikuti_kegiatan']['bobot'])) / 100);
       $bobot_pengetahuan_terhadap_perkerjaan = floatval(intval(str_replace('%', '', $bobot['pengetahuan_terhadap_perkerjaan']['bobot'])) / 100);
       $bobot_implementasi_action = floatval(intval(str_replace('%', '', $bobot['implementasi_action']['bobot'])) / 100);
-      $idx = 1;
-      $reset = true;
+      $idx = 0;
       foreach ($poin as $item) {
         $idxProp = strtolower($item['type_id']);
-        if ($idxProp == 'distribution' && $reset) {
-          $idx = 1;
-          $reset = false;
-        }
         // Perhitungan Xij dan Rij
-        $rowMatrix = [];
-        $rowMatrix2 = [];
+        $row_xij = [];
+        $row_rij = [];
+        $row_xij['name'] = $item['name'];
+        $row_rij['user_id'] = $item['user_id'];
+        $row_rij['name'] = $item['name'];
         for ($i=0; $i < 11; $i++) { 
-          $rowMatrix[] = $item['c' . ($i + 1)];
-          $rowMatrix2[] = $item['c' . ($i + 1)] / $max;
+          $row_xij['c' . ($i + 1)] = $item['c' . ($i + 1)];
+          $row_rij_data = [];
+          $row_rij_data['kode_kriteria'] = 'C' . ($i + 1);
+          $row_rij_data['xij'] = $item['c' . ($i + 1)];
+          $row_rij_data['max'] = $max;
+          $row_rij_data['rij'] = $item['c' . ($i + 1)] / $max;
+          $row_rij['data'][] = $row_rij_data;
         }
-        $matrix_Xij[$idxProp][] = $rowMatrix;
-        $matrix_Rij[$idxProp][] = $rowMatrix2;
+        $matrix_Xij[$idxProp][] = $row_xij;
+        $matrix_Rij[$idxProp][] = $row_rij;
         // Perhitungan V
-        $rowRank = [];
-        $W1 = round(((($item['c1'] / $max) + ($item['c2'] / $max)) / 2) * $bobot_kehadiran, 3);
-        $W2 = round(((($item['c3'] / $max) + ($item['c4'] / $max) + ($item['c5'] / $max)) / 3) * $bobot_keaktifan_mengikuti_kegiatan, 3);
-        $W3 = round(($item['c6'] / $max) * $bobot_pengetahuan_terhadap_perkerjaan, 3);
-        $W4 = round(((($item['c7'] / $max) + ($item['c8'] / $max) + ($item['c9'] / $max) + ($item['c10'] / $max) + ($item['c11'] / $max)) / 5) * $bobot_implementasi_action, 3);
+        $nilai_rumus1 = round(((($item['c1'] / $max) + ($item['c2'] / $max)) / 2), 3);
+        $W1 = round($nilai_rumus1 * $bobot_kehadiran, 3);
+        $nilai_rumus2 = round(((($item['c3'] / $max) + ($item['c4'] / $max) + ($item['c5'] / $max)) / 3), 3);
+        $W2 = round($nilai_rumus2 * $bobot_keaktifan_mengikuti_kegiatan, 3);
+        $nilai_rumus3 = round(($item['c6'] / $max), 3);
+        $W3 = round($nilai_rumus3 * $bobot_pengetahuan_terhadap_perkerjaan, 3);
+        $nilai_rumus4 = round(((($item['c7'] / $max) + ($item['c8'] / $max) + ($item['c9'] / $max) + ($item['c10'] / $max) + ($item['c11'] / $max)) / 5), 3);
+        $W4 = round($nilai_rumus4 * $bobot_implementasi_action, 3);
         $nilai_preferensi = round(($W1 + $W2 + $W3 + $W4), 3);
-        $rowRank['kode_prefensi'] = 'V' . $idx;
-        $rowRank['kode_alternatif'] = 'A' . $idx;
-        $rowRank['nama_alternatif'] = $item['name'];
-        $rowRank['nilai_prefensi'] = $nilai_preferensi;
-        $perhitungan_V[$idxProp]['V' . $idx] = number_format($nilai_preferensi, 3, ',', '.');
-        $rank_V[$idxProp][] = $rowRank;
+        $v_candidate = [];
+        $v_candidate['user_id'] = $item['user_id'];
+        $v_candidate['name'] = $item['name'];
+        $v_candidate['hasil'] = number_format($nilai_preferensi, 3, ',', '.');
+        foreach ($rows_kriteria as $param) {
+          $rij = $row_rij['data'];
+          $v_data = [];
+          $v_data['nama_bobot'] = $param->name;
+          $v_data['rumus'] = $param->rumus;
+          switch ($param->rumus) {
+            // Kehadiran
+            case "(C1+C2)/2":
+              $v_data['isi_rumus'] = "(".$rij[0]['rij']."+".$rij[1]['rij'].")/2";
+              $v_data['nilai_rumus'] = $nilai_rumus1;
+              $v_data['nilai_bobot'] = $bobot_kehadiran;
+              $v_data['nilai_x_bobot'] = $W1;
+              break;
+            // Keaktifan
+            case "(C3+C4+C5)/3":
+              $v_data['isi_rumus'] = "(".$rij[2]['rij']."+".$rij[3]['rij']."+".$rij[4]['rij'].")/3";
+              $v_data['nilai_rumus'] = $nilai_rumus2;
+              $v_data['nilai_bobot'] = $bobot_keaktifan_mengikuti_kegiatan;
+              $v_data['nilai_x_bobot'] = $W2;
+              break;
+            // Action
+            case "(C7+C8+C9+C10+C11)/5":
+              $v_data['isi_rumus'] = "(".$rij[6]['rij']."+".$rij[7]['rij']."+".$rij[8]['rij']."+".$rij[9]['rij']."+".$rij[10]['rij'].")/5";
+              $v_data['nilai_rumus'] = $nilai_rumus4;
+              $v_data['nilai_bobot'] = $bobot_implementasi_action;
+              $v_data['nilai_x_bobot'] = $W4;
+              break;
+            // Pengetahuan
+            default:
+              $v_data['isi_rumus'] = $rij[5]['rij'] . "";
+              $v_data['nilai_rumus'] = $nilai_rumus3;
+              $v_data['nilai_bobot'] = $bobot_pengetahuan_terhadap_perkerjaan;
+              $v_data['nilai_x_bobot'] = $W3;
+              break;
+          }
+          $v_candidate['data'][] = $v_data;
+        }
+        $perhitungan_V[$idxProp][] = $v_candidate;
+        // Ranking
+        $rank_candidate = [];
+        $rank_candidate['user_id'] = $item['user_id'];
+        $rank_candidate['name'] = $item['name'];
+        $rank_candidate['job_title'] = $item['job_title'];
+        $rank_candidate['work_location'] = $item['work_location'];
+        $rank_candidate['type_id'] = $item['type_id'];
+        $rank_candidate['nilai'] = $nilai_preferensi;
+        $rank_V[$idxProp][] = $rank_candidate;
+        // Unset
+        unset($poin[$idx]['id']);
+        unset($poin[$idx]['user_id']);
+        unset($poin[$idx]['job_title']);
+        unset($poin[$idx]['work_location']);
         $idx++;
       }
       // Generate ranking
       if (count($rank_V['inventory']) > 0) {
-        $rank_V['inventory'] = collect($rank_V['inventory'])->sortByDesc('nilai_prefensi')->values()->all();
+        $rank_V['inventory'] = collect($rank_V['inventory'])->sortByDesc('nilai')->values()->all();
       }
       if (count($rank_V['distribution']) > 0) {
-        $rank_V['distribution'] = collect($rank_V['distribution'])->sortByDesc('nilai_prefensi')->values()->all();
+        $rank_V['distribution'] = collect($rank_V['distribution'])->sortByDesc('nilai')->values()->all();
       }
       return response()->json([
         "kriteria" => $kriteria,

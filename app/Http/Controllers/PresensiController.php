@@ -130,7 +130,9 @@ class PresensiController extends Controller
                 INNER JOIN tipe_karyawan AS tipe ON tipe.id = karyawan.type_id ". $whereClause ."
               ORDER BY presensi.created_at ASC ";
       $total_rows = count(DB::select($sql));
-      $sql .= " LIMIT " . intval($request->first) . "," . $request->rows;
+      if ($request->rows != -1) {
+        $sql .= " LIMIT " . intval($request->first) . "," . $request->rows;
+      }
       $data = array();
       $rawData = DB::select($sql);
       foreach ($rawData as $item) {
@@ -143,6 +145,7 @@ class PresensiController extends Controller
           'tgl_absen' => $item->tgl_absen,
           'jam' => $item->jam,
           'status' => $item->status,
+          'skor' => floatval($item->skor),
         ];
       }
       return response()->json([
@@ -162,20 +165,17 @@ class PresensiController extends Controller
     try {
       // validasi input data
       $validator = Validator::make($request->all(), [
+        "id" => 'required|numeric',
         "user_id" => 'required|numeric',
         "tgl_absen" => 'required|date',
-        "id_masuk" => 'required|numeric',
-        "jam_masuk" => 'required',
-        "skor_masuk" => 'required|numeric',
-        "status_masuk" => 'required',
-        "id_pulang" => 'required|numeric',
-        "jam_pulang" => 'required',
-        "skor_pulang" => 'required|numeric',
-        "status_pulang" => 'required'
+        "jam" => 'required|dateformat:H:i:s',
+        "skor" => 'required|numeric',
+        "status" => 'required|string'
       ], [
         'required' => ':attribute tidak boleh kosong',
         'numeric' => ':attribute harus berupa angka',
-        'date' => ':attribute harus berupa tanggal'
+        'date' => ':attribute harus berupa tanggal',
+        'dateformat' => ':attribute harus berupa format H:i:s',
       ]);
       if ($validator->fails()) {
         throw new Exception($validator->errors()->first(), 400);
@@ -185,35 +185,24 @@ class PresensiController extends Controller
       if (empty($user)) {
         throw new Exception("Data user tidak ditemukan", 404);
       }
-
-      $affectedRows = 0;
-      DB::beginTransaction();
-      try {
-        // Update data presensi masuk
-        $affectedRows += Presensi::query()->where('id', '=', $request->id_masuk)->update([
-          'status' => $request->status_masuk,
-          'jam' => $request->jam_masuk,
-          'skor' => $request->skor_masuk,
-          'updated_at' => DateTime::Now(),
-          'updated_by' => $user->karyawan->name
-        ]);
-        // Update data presensi pulang
-        $affectedRows += Presensi::query()->where('id', '=', $request->id_pulang)->update([
-          'status' => $request->status_pulang,
-          'jam' => $request->jam_pulang,
-          'skor' => $request->skor_pulang,
-          'updated_at' => DateTime::Now(),
-          'updated_by' => $user->karyawan->name
-        ]);
-        DB::commit();
-        if ($affectedRows == 0) {
-          throw new Exception("Gagal update data di database", 500);
-        }
-        return response()->json(['message' => 'Berhasil edit data absen ' . $user->karyawan->name], 202);
-      } catch (Exception $transEx) {
-        DB::rollBack();
-        throw new Exception($transEx->getMessage(), $transEx->getCode());
+      // Get data existing Presensi
+      $presensi = Presensi::query()
+                  ->where('id', '=', $request->id)
+                  ->where('user_id', '=', $request->user_id)
+                  ->first();
+      if (empty($presensi)) {
+        throw new Exception("Data presensi tidak ditemukan", 404);
       }
+      // Update data presensi
+      $presensi->status = $request->status;
+      $presensi->tgl_absen = DateTime::DateSQL($request->tgl_absen);
+      $presensi->jam = $request->jam;
+      $presensi->skor = $request->skor;
+      $presensi->updated_at = DateTime::Now();
+      $presensi->updated_by = 'Admin';
+      $presensi->save();
+
+      return response()->json(['message' => 'Data presensi berhasil diupdate'], 202);
     } catch (Exception $ex) {
       $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
