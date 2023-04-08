@@ -6,13 +6,16 @@ class DateTime
 {
   public static function Now()
   {
-    // date_default_timezone_set('Asia/Jakarta');
     return date('Y-m-d H:i:s');
+  }
+
+  public static function DateNow()
+  {
+    return date('Y-m-d');
   }
 
   public static function HariIni($timestamp = null)
   {
-    // date_default_timezone_set('Asia/Jakarta');
     $day = date('D', $timestamp);
     $listHari = array(
       'Sun' => 'Minggu',
@@ -28,7 +31,6 @@ class DateTime
 
   public static function TimeNow()
   {
-    // date_default_timezone_set('Asia/Jakarta');
     return date('H:i:s');
   }
 

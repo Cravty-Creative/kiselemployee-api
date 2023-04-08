@@ -130,4 +130,36 @@ class UserController extends Controller
       ], $httpCode);
     }
   }
+
+  public function countUser()
+  {
+    try {
+      $inventory = Karyawan::query()->where('type_id', '=', 1)->where('name', '<>', 'Super Admin')->count();
+      $distributor = Karyawan::query()->where('type_id', '=', 2)->where('name', '<>', 'Super Admin')->count();
+      $count = $inventory + $distributor;
+      $data = [
+        [
+          "title" => "Jumlah Karyawan",
+          "jumlah" => $count,
+          "last_updated" => DateTime::DateNow()
+        ],
+        [
+          "title" => "Jumlah Karyawan Inventory",
+          "jumlah" => $inventory,
+          "last_updated" => DateTime::DateNow()
+        ],
+        [
+          "title" => "Jumlah Karyawan Distributor",
+          "jumlah" => $distributor,
+          "last_updated" => DateTime::DateNow()
+        ]
+      ];
+      return response()->json(['data' => $data], 200);
+    } catch (Exception $ex) {
+      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
+      return response()->json([
+        'message' => $ex->getMessage()
+      ], $httpCode);
+    }
+  }
 }

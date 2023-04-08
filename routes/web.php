@@ -60,4 +60,6 @@ $router->group(['middleware' => 'auth:api'], function () {
   Route::delete('/nilai/delete', 'PenilaianController@delete');
   // Rating
   Route::post('/rating', 'RatingController@getRating');
+  // Count user
+  Route::get('/dashboard/getusercount', 'UserController@countUser');
 });
