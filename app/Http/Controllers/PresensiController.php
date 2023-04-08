@@ -24,11 +24,7 @@ class PresensiController extends Controller
       // validasi input data
       $validator = Validator::make($request->all(), [
         'user_id' => 'required|numeric',
-        'tgl_absen' => 'required|date',
-        'skor_masuk' => 'numeric',
-        'status_masuk' => 'string',
-        'skor_pulang' => 'numeric',
-        'status_pulang' => 'string',
+        'tgl_absen' => 'required|date'
       ], [
         'required' => ':attribute tidak boleh kosong',
         'numeric' => ':attribute harus berupa angka',
@@ -42,6 +38,23 @@ class PresensiController extends Controller
       $user = Users::query()->where('id', '=', $request->user_id)->with('karyawan')->first();
       if (empty($user)) {
         throw new Exception("Data user tidak ditemukan", 404);
+      }
+      // Check existing data
+      $presensiMasuk = Presensi::query()
+          ->where('user_id', '=', $request->user_id)
+          ->where('tgl_absen', '=', DateTime::DateSQL($request->tgl_absen))
+          ->where('tipe_absen', '=', 'Masuk')
+          ->first();
+      if ($presensiMasuk) {
+        throw new Exception("Data absen masuk sudah ada", 400);
+      }
+      $presensiPulang = Presensi::query()
+          ->where('user_id', '=', $request->user_id)
+          ->where('tgl_absen', '=', DateTime::DateSQL($request->tgl_absen))
+          ->where('tipe_absen', '=', 'Pulang')
+          ->first();
+      if ($presensiPulang) {
+        throw new Exception("Data absen pulang sudah ada", 400);
       }
       DB::beginTransaction();
       try {
