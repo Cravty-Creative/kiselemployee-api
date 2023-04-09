@@ -208,6 +208,20 @@ class RatingController extends Controller
         if (array_key_exists('distribution', $rank_V) && count($rank_V['distribution']) > 0) {
           $rank_V['distribution'] = collect($rank_V['distribution'])->sortByDesc('nilai')->values()->all();
         }
+        // Isi array kosong pada tipe_karyawan yang tidak dipilih
+        if ($tipe_karyawan || !empty($request->user_id)) {
+          $key = "inventory";
+          if (!empty($request->user_id)) {
+            $tipe_karyawan = $rows_poin[0]->type_id;
+          }
+          if ($tipe_karyawan == 1) {
+            $key = "distribution";
+          }
+          $matrix_Xij[$key] = [];
+          $matrix_Rij[$key] = [];
+          $perhitungan_V[$key] = [];
+          $rank_V[$key] = [];
+        }
         return response()->json([
           "kriteria" => $kriteria,
           "bobot_kriteria" => $bobot,
