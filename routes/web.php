@@ -16,7 +16,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 $router->get('/', function () use ($router) {
-  return $router->app->version();
+  return response()->json([
+    'Lumen' => $router->app->version(),
+    'PHP' => phpversion(),
+  ]);
 });
 
 // User Login
