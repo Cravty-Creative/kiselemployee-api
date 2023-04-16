@@ -93,10 +93,9 @@ class PresensiController extends Controller
         throw new Exception($transEx->getMessage(), 500);
       }
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -166,10 +165,9 @@ class PresensiController extends Controller
         "data" => $data
       ], 200);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -217,10 +215,9 @@ class PresensiController extends Controller
 
       return response()->json(['message' => 'Data presensi berhasil diupdate'], 202);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -238,10 +235,9 @@ class PresensiController extends Controller
       Presensi::query()->where('id', '=', $request->id)->delete();
       return response()->json(['message' => 'Data presensi berhasil dihapus'], 200);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 }

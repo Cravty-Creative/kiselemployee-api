@@ -86,10 +86,9 @@ class KaryawanController extends Controller
         throw new Exception($qe->getCode() . ": " . $qe->getMessage(), 500);
       }
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -99,10 +98,9 @@ class KaryawanController extends Controller
       $data = Karyawan::all(['id', 'name']);
       return response()->json($data);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -112,10 +110,9 @@ class KaryawanController extends Controller
       $data = Karyawan::query()->with(['user', 'tipe_karyawan'])->get();
       return response()->json($data);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -135,10 +132,9 @@ class KaryawanController extends Controller
       $data = Karyawan::query()->where('section', '=', $request->section)->with(['user', 'tipe_karyawan'])->get();
       return response()->json($data);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -149,10 +145,9 @@ class KaryawanController extends Controller
       $data = DB::select($sql);
       return response()->json($data);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -193,10 +188,9 @@ class KaryawanController extends Controller
       ];
       return response()->json($data, 200);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -256,10 +250,9 @@ class KaryawanController extends Controller
         'data' => $data
       ], 200);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -329,10 +322,9 @@ class KaryawanController extends Controller
         throw new Exception($qe->getCode() . ": " . $qe->getMessage(), 500);
       }
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -375,10 +367,9 @@ class KaryawanController extends Controller
         throw new Exception($qe->getCode() . ": " . $qe->getMessage(), 500);
       }
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 }

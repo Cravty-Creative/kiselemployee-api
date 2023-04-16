@@ -22,8 +22,6 @@ class RatingController extends Controller
     try {
       $validator = Validator::make($request->all(), [
         "periode" => "required|string",
-        // "tipe_karyawan" => "string",
-        // "user_id" => "numeric",
         "limit" => "numeric"
       ], [
         "required" => ":attribute tidak boleh kosong",
@@ -236,10 +234,9 @@ class RatingController extends Controller
         return response()->json(["message" => "No Data"], 404);
       }
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 }

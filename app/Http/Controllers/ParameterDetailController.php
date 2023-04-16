@@ -44,10 +44,9 @@ class ParameterDetailController extends Controller
       }
       return response()->json($data);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -74,10 +73,9 @@ class ParameterDetailController extends Controller
 
       return response()->json(['message' => 'Data berhasil dibuat'], 204);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -107,10 +105,9 @@ class ParameterDetailController extends Controller
 
       return response()->json(['message' => 'Data berhasil diubah'], 202);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -130,10 +127,9 @@ class ParameterDetailController extends Controller
 
       return response()->json(['message' => 'Data berhasil dihapus'], 200);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 }

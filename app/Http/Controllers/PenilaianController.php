@@ -166,10 +166,9 @@ class PenilaianController extends Controller
         throw new Exception($transEx->getMessage(), 500);
       }
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -255,10 +254,9 @@ class PenilaianController extends Controller
         "data" => $data
       ]);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -366,10 +364,9 @@ class PenilaianController extends Controller
         throw new Exception($transEx->getMessage(), 500);
       }
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 
@@ -388,10 +385,9 @@ class PenilaianController extends Controller
       NilaiKaryawan::query()->where('id', '=', $request->id)->delete();
       return response()->json(['message' => "Data berhasil dihapus"], 200);
     } catch (Exception $ex) {
-      $httpCode = empty($ex->getCode()) || !is_int($ex->getCode()) ? 500 : $ex->getCode();
       return response()->json([
         'message' => $ex->getMessage()
-      ], $httpCode);
+      ], 500);
     }
   }
 }
