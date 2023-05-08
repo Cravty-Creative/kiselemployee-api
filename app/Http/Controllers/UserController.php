@@ -104,7 +104,7 @@ class UserController extends Controller
         if (Crypt::decrypt($user->password) == $request->old_password) {
           // Update user password
           $affectedRow = Users::query()->where('id', '=', $user->id)->update([
-            'password' => Crypt::encrypt($request->password),
+            'password' => Crypt::encrypt($request->new_password),
             'updated_at' => DateTime::Now()
           ]);
           // Kondisi gagal update
