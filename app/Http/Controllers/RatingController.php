@@ -131,7 +131,7 @@ class RatingController extends Controller
             $row_rij_data['kode_kriteria'] = 'K' . ($i + 1);
             $row_rij_data['xij'] = $item['k' . ($i + 1)]; 
             $row_rij_data['max'] = $max;
-            $row_rij_data['rij'] = $item['k' . ($i + 1)] / $max;
+            $row_rij_data['rij'] = round(($item['k' . ($i + 1)] / $max), 3);
             $row_rij['data'][] = $row_rij_data;
           }
           // Kode lama yang menggunakan sub kriteria
