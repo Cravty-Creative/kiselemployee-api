@@ -98,6 +98,11 @@ class RatingController extends Controller
           $rowPoin['c9'] = $c7c8c9c10c11_skor->innovation;
           $rowPoin['c10'] = $c7c8c9c10c11_skor->open_mindset;
           $rowPoin['c11'] = $c7c8c9c10c11_skor->networking;
+          // K1, K2, K3, K4
+          $rowPoin['k1'] = ($c1c2_skor->masuk + $c1c2_skor->pulang) / 2;
+          $rowPoin['k2'] = ($c3c4c5_skor->olahraga + $c3c4c5_skor->keagamaan + $c3c4c5_skor->sharing_session) / 3;
+          $rowPoin['k3'] = $c6_skor->pengetahuan;
+          $rowPoin['k4'] = ($c7c8c9c10c11_skor->agility + $c7c8c9c10c11_skor->customer_centric + $c7c8c9c10c11_skor->innovation + $c7c8c9c10c11_skor->open_mindset + $c7c8c9c10c11_skor->networking) / 5;
 
           $poin[] = $rowPoin;
         }
@@ -120,15 +125,25 @@ class RatingController extends Controller
           $row_xij['name'] = $item['name'];
           $row_rij['user_id'] = $item['user_id'];
           $row_rij['name'] = $item['name'];
-          for ($i=0; $i < 11; $i++) { 
-            $row_xij['c' . ($i + 1)] = $item['c' . ($i + 1)];
+          for ($i=0; $i < 4; $i++) { 
+            $row_xij['k' . ($i + 1)] = $item['k' . ($i + 1)];
             $row_rij_data = [];
-            $row_rij_data['kode_kriteria'] = 'C' . ($i + 1);
-            $row_rij_data['xij'] = $item['c' . ($i + 1)];
+            $row_rij_data['kode_kriteria'] = 'K' . ($i + 1);
+            $row_rij_data['xij'] = $item['k' . ($i + 1)]; 
             $row_rij_data['max'] = $max;
-            $row_rij_data['rij'] = $item['c' . ($i + 1)] / $max;
+            $row_rij_data['rij'] = $item['k' . ($i + 1)] / $max;
             $row_rij['data'][] = $row_rij_data;
           }
+          // Kode lama yang menggunakan sub kriteria
+          // for ($i=0; $i < 11; $i++) { 
+          //   $row_xij['c' . ($i + 1)] = $item['c' . ($i + 1)];
+          //   $row_rij_data = [];
+          //   $row_rij_data['kode_kriteria'] = 'C' . ($i + 1);
+          //   $row_rij_data['xij'] = $item['c' . ($i + 1)];
+          //   $row_rij_data['max'] = $max;
+          //   $row_rij_data['rij'] = $item['c' . ($i + 1)] / $max;
+          //   $row_rij['data'][] = $row_rij_data;
+          // }
           $matrix_Xij[$idxProp][] = $row_xij;
           $matrix_Rij[$idxProp][] = $row_rij;
           // Perhitungan V
@@ -149,33 +164,33 @@ class RatingController extends Controller
             $rij = $row_rij['data'];
             $v_data = [];
             $v_data['nama_bobot'] = $param->name;
-            $v_data['rumus'] = $param->rumus;
+            // $v_data['rumus'] = $param->rumus;
             switch ($param->rumus) {
               // Kehadiran
               case "(C1+C2)/2":
-                $v_data['isi_rumus'] = "(".$rij[0]['rij']."+".$rij[1]['rij'].")/2";
-                $v_data['nilai_rumus'] = $nilai_rumus1;
+                // $v_data['isi_rumus'] = "(".$rij[0]['rij']."+".$rij[1]['rij'].")/2";
+                $v_data['nilai_rij'] = $nilai_rumus1;
                 $v_data['nilai_bobot'] = $bobot_kehadiran;
                 $v_data['nilai_x_bobot'] = $W1;
                 break;
               // Keaktifan
               case "(C3+C4+C5)/3":
-                $v_data['isi_rumus'] = "(".$rij[2]['rij']."+".$rij[3]['rij']."+".$rij[4]['rij'].")/3";
-                $v_data['nilai_rumus'] = $nilai_rumus2;
+                // $v_data['isi_rumus'] = "(".$rij[2]['rij']."+".$rij[3]['rij']."+".$rij[4]['rij'].")/3";
+                $v_data['nilai_rij'] = $nilai_rumus2;
                 $v_data['nilai_bobot'] = $bobot_keaktifan_mengikuti_kegiatan;
                 $v_data['nilai_x_bobot'] = $W2;
                 break;
               // Action
               case "(C7+C8+C9+C10+C11)/5":
-                $v_data['isi_rumus'] = "(".$rij[6]['rij']."+".$rij[7]['rij']."+".$rij[8]['rij']."+".$rij[9]['rij']."+".$rij[10]['rij'].")/5";
-                $v_data['nilai_rumus'] = $nilai_rumus4;
+                // $v_data['isi_rumus'] = "(".$rij[6]['rij']."+".$rij[7]['rij']."+".$rij[8]['rij']."+".$rij[9]['rij']."+".$rij[10]['rij'].")/5";
+                $v_data['nilai_rij'] = $nilai_rumus4;
                 $v_data['nilai_bobot'] = $bobot_implementasi_action;
                 $v_data['nilai_x_bobot'] = $W4;
                 break;
               // Pengetahuan
               default:
-                $v_data['isi_rumus'] = $rij[5]['rij'] . "";
-                $v_data['nilai_rumus'] = $nilai_rumus3;
+                // $v_data['isi_rumus'] = $rij[5]['rij'] . "";
+                $v_data['nilai_rij'] = $nilai_rumus3;
                 $v_data['nilai_bobot'] = $bobot_pengetahuan_terhadap_perkerjaan;
                 $v_data['nilai_x_bobot'] = $W3;
                 break;
