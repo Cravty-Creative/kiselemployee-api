@@ -99,10 +99,10 @@ class RatingController extends Controller
           $rowPoin['c10'] = $c7c8c9c10c11_skor->open_mindset;
           $rowPoin['c11'] = $c7c8c9c10c11_skor->networking;
           // K1, K2, K3, K4
-          $rowPoin['k1'] = ($c1c2_skor->masuk + $c1c2_skor->pulang) / 2;
-          $rowPoin['k2'] = ($c3c4c5_skor->olahraga + $c3c4c5_skor->keagamaan + $c3c4c5_skor->sharing_session) / 3;
-          $rowPoin['k3'] = $c6_skor->pengetahuan;
-          $rowPoin['k4'] = ($c7c8c9c10c11_skor->agility + $c7c8c9c10c11_skor->customer_centric + $c7c8c9c10c11_skor->innovation + $c7c8c9c10c11_skor->open_mindset + $c7c8c9c10c11_skor->networking) / 5;
+          $rowPoin['k1'] = round((($c1c2_skor->masuk + $c1c2_skor->pulang) / 2), 0, PHP_ROUND_HALF_UP);
+          $rowPoin['k2'] = round((($c3c4c5_skor->olahraga + $c3c4c5_skor->keagamaan + $c3c4c5_skor->sharing_session) / 3), 0, PHP_ROUND_HALF_UP);
+          $rowPoin['k3'] = round(($c6_skor->pengetahuan), 0, PHP_ROUND_HALF_UP);
+          $rowPoin['k4'] = round((($c7c8c9c10c11_skor->agility + $c7c8c9c10c11_skor->customer_centric + $c7c8c9c10c11_skor->innovation + $c7c8c9c10c11_skor->open_mindset + $c7c8c9c10c11_skor->networking) / 5), 0, PHP_ROUND_HALF_UP);
 
           $poin[] = $rowPoin;
         }
