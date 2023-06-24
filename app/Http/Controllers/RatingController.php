@@ -58,7 +58,9 @@ class RatingController extends Controller
       $year = $periode[1];
       $rows_poin = Karyawan::query()->with(['nilai_karyawan' => function ($subquery) use ($month, $year) {
         $subquery->where('periode', '=', $month . ' ' . $year);
-      }])->whereHas('nilai_karyawan');
+      }])->whereHas('nilai_karyawan', function ($subquery) use ($month, $year) {
+        $subquery->where('periode', '=', $month . ' ' . $year);
+      });
       if (!empty($tipe_karyawan)) {
         $rows_poin = $rows_poin->where('type_id', '=', $tipe_karyawan);
       }
