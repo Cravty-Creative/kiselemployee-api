@@ -147,7 +147,7 @@ class UserController extends Controller
           "last_updated" => DateTime::DateNow()
         ],
         [
-          "title" => "Jumlah Karyawan Distributor",
+          "title" => "Jumlah Karyawan Distribution",
           "jumlah" => $distributor,
           "last_updated" => DateTime::DateNow()
         ]
