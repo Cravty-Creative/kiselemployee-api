@@ -67,9 +67,9 @@ class RatingController extends Controller
       if (!empty($request->user_id)) {
         $rows_poin = $rows_poin->where('user_id', '=', $request->user_id);
       }
-      if (!empty($request->limit) && $request->limit > 0) {
-        $rows_poin = $rows_poin->skip(0)->take($request->limit);
-      }
+      // if (!empty($request->limit) && $request->limit > 0) {
+      //   $rows_poin = $rows_poin->skip(0)->take($request->limit);
+      // }
       $rows_poin = $rows_poin->get();
       if ($rows_poin && count($rows_poin) > 0 && $rows_poin[0]->nilai_karyawan && count($rows_poin[0]->nilai_karyawan) > 0) {
         $poin = [];
@@ -218,10 +218,20 @@ class RatingController extends Controller
         }
         // Generate ranking
         if (array_key_exists('inventory', $rank_V) && count($rank_V['inventory']) > 0) {
-          $rank_V['inventory'] = collect($rank_V['inventory'])->sortByDesc('nilai')->values()->all();
+          $inventory = collect($rank_V['inventory'])->sortByDesc('nilai')->values();
+          if (!empty($request->limit) && $request->limit > 0) {
+            $rank_V['inventory'] = $inventory->take($request->limit);
+          } else {
+            $rank_V['inventory'] = $inventory->all();
+          }
         }
         if (array_key_exists('distribution', $rank_V) && count($rank_V['distribution']) > 0) {
-          $rank_V['distribution'] = collect($rank_V['distribution'])->sortByDesc('nilai')->values()->all();
+          $distribution = collect($rank_V['distribution'])->sortByDesc('nilai')->values();
+          if (!empty($request->limit) && $request->limit > 0) {
+            $rank_V['distribution'] = $distribution->take($request->limit);
+          } else {
+            $rank_V['distribution'] = $distribution->all();
+          }
         }
         // Isi array kosong pada tipe_karyawan yang tidak dipilih
         if ($tipe_karyawan || !empty($request->user_id)) {
