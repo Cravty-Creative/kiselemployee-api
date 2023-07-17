@@ -22,6 +22,7 @@ class KaryawanController extends Controller
     $this->middleware('auth:api', ['except' => ['create']]);
   }
 
+  // Fungsi untuk membuat data karyawan
   public function create(Request $request)
   {
     try {
@@ -92,6 +93,7 @@ class KaryawanController extends Controller
     }
   }
 
+  // Fungsi untuk membaca semua data karyawan untuk select option
   public function getAll()
   {
     try {
@@ -104,6 +106,7 @@ class KaryawanController extends Controller
     }
   }
 
+  // Fungsi untuk membaca semua data karyawan
   public function getAllKaryawan()
   {
     try {
@@ -116,6 +119,7 @@ class KaryawanController extends Controller
     }
   }
 
+  // Fungsi untuk membaca semua data karyawan untuk table berdasarkan section
   public function getKaryawanBySection(Request $request)
   {
     try {
@@ -138,6 +142,7 @@ class KaryawanController extends Controller
     }
   }
 
+  // Fungsi untuk membaca section karyawan
   public function getSection()
   {
     try {
@@ -151,6 +156,7 @@ class KaryawanController extends Controller
     }
   }
 
+  // Fungsi untuk membaca data karyawan berdasarkan id
   public function getById(Request $request)
   {
     try {
@@ -194,6 +200,7 @@ class KaryawanController extends Controller
     }
   }
 
+  // Fungsi untuk membaca semua data karyawan dengan filter
   public function getMany(Request $request)
   {
     try {
@@ -256,6 +263,7 @@ class KaryawanController extends Controller
     }
   }
 
+  // Fungsi untuk menghapus data karyawan
   public function update(Request $request)
   {
     try {
@@ -328,6 +336,7 @@ class KaryawanController extends Controller
     }
   }
 
+  // Fungsi untuk menghapus data karyawan
   public function delete(Request $request)
   {
     try {

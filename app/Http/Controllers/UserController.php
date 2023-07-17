@@ -18,6 +18,8 @@ class UserController extends Controller
   {
     $this->middleware('auth:api', ['except' => ['login']]);
   }
+
+  // Fungsi untuk user login
   public function login(Request $request)
   {
     try {
@@ -79,6 +81,7 @@ class UserController extends Controller
     }
   }
 
+  // Fungsi untuk user ubah password
   public function changePassword(Request $request)
   {
     try {
@@ -129,6 +132,7 @@ class UserController extends Controller
     }
   }
 
+  // Fungsi untuk menghitung jumlah user
   public function countUser()
   {
     try {

@@ -17,6 +17,7 @@ class RatingController extends Controller
     $this->middleware('auth:api');
   }
 
+  // Fungsi untuk menghitung rating karyawan
   public function getRating(Request $request)
   {
     try {

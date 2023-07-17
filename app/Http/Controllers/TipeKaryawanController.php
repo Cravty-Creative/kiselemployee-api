@@ -14,6 +14,7 @@ class TipeKaryawanController extends Controller
     $this->middleware('auth:api');
   }
 
+  // Fungsi untuk membaca data tipe karyawan
   public function getAll()
   {
     try {

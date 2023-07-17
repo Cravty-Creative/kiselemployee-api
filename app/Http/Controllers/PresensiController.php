@@ -18,6 +18,7 @@ class PresensiController extends Controller
     $this->middleware('auth:api');
   }
 
+  // Fungsi untuk menambah data presensi
   public function create(Request $request)
   {
     try {
@@ -99,6 +100,7 @@ class PresensiController extends Controller
     }
   }
 
+  // Fungsi untuk membaca data presensi
   public function getAll(Request $request)
   {
     try {
@@ -171,6 +173,7 @@ class PresensiController extends Controller
     }
   }
 
+  // Fungsi untuk mengubah data presensi
   public function update(Request $request)
   {
     try {
@@ -221,6 +224,7 @@ class PresensiController extends Controller
     }
   }
 
+  // Fungsi untuk menghapus data presensi
   public function delete(Request $request)
   {
     try {

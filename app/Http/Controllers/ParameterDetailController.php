@@ -16,6 +16,7 @@ class ParameterDetailController extends Controller
     $this->middleware('auth:api');
   }
 
+  // Fungsi untuk membaca data parameter detail
   public function getAll()
   {
     try {
@@ -28,6 +29,7 @@ class ParameterDetailController extends Controller
     }
   }
 
+  // Fungsi untuk membaca data parameter detail berdasarkan id
   public function getById(Request $request)
   {
     try {
@@ -50,6 +52,7 @@ class ParameterDetailController extends Controller
     }
   }
 
+  // Fungsi untuk membuat data parameter detail
   public function create(Request $request)
   {
     try {
@@ -79,6 +82,7 @@ class ParameterDetailController extends Controller
     }
   }
 
+  // Fungsi untuk mengubah data parameter detail
   public function update(Request $request)
   {
     try {
@@ -111,6 +115,7 @@ class ParameterDetailController extends Controller
     }
   }
 
+  // Fungsi untuk menghapus data parameter detail
   public function delete(Request $request)
   {
     try {

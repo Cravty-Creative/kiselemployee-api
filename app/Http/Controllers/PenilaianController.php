@@ -20,6 +20,7 @@ class PenilaianController extends Controller
     $this->middleware('auth:api');
   }
 
+  // Fungsi untuk menambah data penilaian
   public function store(Request $request)
   {
     try {
@@ -172,6 +173,7 @@ class PenilaianController extends Controller
     }
   }
 
+  // Fungsi untuk membaca data nilai karyawan
   public function getAll(Request $request)
   {
     try {
@@ -260,6 +262,7 @@ class PenilaianController extends Controller
     }
   }
 
+  // Fungsi untuk mengupdate data nilai karyawan
   public function update(Request $request)
   {
     try {
@@ -370,6 +373,7 @@ class PenilaianController extends Controller
     }
   }
 
+  // Fungsi untuk menghapus data nilai karyawan
   public function delete(Request $request)
   {
     try {
